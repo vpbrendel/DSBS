@@ -348,7 +348,7 @@ def bsmap(Fq1,Fq2,AlignDir):
         bam='{}/{}.bsmap.bam'.format(AlignDir,subfq)
         filterFq(cleanq1,cleanq2)
         if  not op.exists(outdir+'/log/'+subfq+".bsmap.log"): 
-            command= """{bsmap}  -a  {FqClean1}  -b  {FqClean2}  -d  {Ref}    -m 10 -x 500  -S 1 -z 33  -s 16  -g 3 -n 1 -q 0 -f 5 -p 20 -u -r 1 -v 0.08  |awk ' $6 !~/-/ && $6 !~ /[DI]0M$/'| {samtools} view -b -S - -o  {Bam}""".format(bsmap=configDict['bsmap'], FqClean1=cleanq1+".passed", FqClean2=cleanq2+".passed", Ref=ref, Bam=bam, samtools=configDict['samtools'])
+            command= """{bsmap}  -a  {FqClean1}  -b  {FqClean2}  -d  {Ref}    -m 10 -x 500  -S 1 -z 33  -s 12  -g 3 -n 1 -q 0 -f 5 -p 6 -u -r 1 -v 0.08  |awk ' $6 !~/-/ && $6 !~ /[DI]0M$/'| {samtools} view -b -S - -o  {Bam}""".format(bsmap=configDict['bsmap'], FqClean1=cleanq1+".passed", FqClean2=cleanq2+".passed", Ref=ref, Bam=bam, samtools=configDict['samtools'])
             tmplog=outdir+'/log/'+subfq+".bsmap.log"
             tmplogs[bam]=tmplog
             commands[bam]=command
@@ -756,7 +756,7 @@ def get_parser():
     parser.add_argument('-a','--fq1',      nargs='*',   required='true', help='Fastq1(s), Space separation')
     parser.add_argument('-b','--fq2',      nargs='*',   required='true', help='Fastq2(s), Space separation')
     parser.add_argument('-r','--ref',      type=str,    default='',      help='refrence')
-    parser.add_argument('-k','--knownsites', nargs='*'  ,default=['1000G_omni','1000G_phase1','dbsnp','hapmap'],     help='knownsites')
+    parser.add_argument('-k','--knownsites', nargs='*'  ,default=['dbsnp'],     help='knownsites')
     parser.add_argument('-d', '--depth',   type=int,    default=4,       help='the minimum depth , default is 4')
     parser.add_argument('-q','--cleanquality',  type=int,    default=30, help='quality when clening the fastq')
     parser.add_argument('--gapsize',       type=int,    default=3,       help='the size of insert or del, default is 3')
