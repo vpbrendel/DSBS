@@ -348,7 +348,7 @@ def bsmap(Fq1,Fq2,AlignDir):
         bam='{}/{}.bsmap.bam'.format(AlignDir,subfq)
         filterFq(cleanq1,cleanq2)
         if  not op.exists(outdir+'/log/'+subfq+".bsmap.log"): 
-            command= """{bsmap}  -a  {FqClean1}  -b  {FqClean2}  -d  {Ref}    -m 10 -x 500  -S 1 -z 33  -s 12  -g 3 -n 1 -q 0 -f 5 -p 6 -u -r 1 -v 0.08  |awk ' $6 !~/-/ && $6 !~ /[DI]0M$/'| {samtools} view -b -S - -o  {Bam}""".format(bsmap=configDict['bsmap'], FqClean1=cleanq1+".passed", FqClean2=cleanq2+".passed", Ref=ref, Bam=bam, samtools=configDict['samtools'])
+            command= """{bsmap}  -a  {FqClean1}  -b  {FqClean2}  -d  {Ref}    -m 10 -x 500  -S 1 -z 33  -s 16  -g 3 -n 1 -q 0 -f 5 -p 24 -u -r 1 -v 0.08  |awk ' $6 !~/-/ && $6 !~ /[DI]0M$/'| {samtools} view -b -S - -o  {Bam}""".format(bsmap=configDict['bsmap'], FqClean1=cleanq1+".passed", FqClean2=cleanq2+".passed", Ref=ref, Bam=bam, samtools=configDict['samtools'])
             tmplog=outdir+'/log/'+subfq+".bsmap.log"
             tmplogs[bam]=tmplog
             commands[bam]=command
@@ -675,7 +675,7 @@ def getSnpAndMeth(outdir):
             else:
                 bamFile='{}/{}/{}.merge.sorted.rmdup.bam'.format(outdir+"/"+Path,chr,chr)
             genomeFile='{refDir}/{chr}.fa'.format(refDir=configDict['refDir'], chr=chr)
-            command='''{python3} {DSBS}  {bam} --ref {ref} --Chr {chr} --maxBp 50 --minVaf 0.15 -q -g {genomeFile} -o {outdir}/{Path}/ --cpu {cpu} -d {dbsnp} '''.format(python3=configDict['python3'], DSBS=configDict['DSBS'], bam=bamFile, ref='hg38' if 'hg38' in configDict['ref'] else 'hg19' ,genomeFile=genomeFile, chr=chr, outdir=outdir,Path=Path, cpu=cpu, dbsnp=configDict['dbsnp_gz'])
+            command='''{python3} {DSBS}  {bam} --ref {ref} --Chr {chr} --maxBp 50 --minVaf 0.15 -q -g {genomeFile} -o {outdir}/{Path}/ --cpu {cpu} -d {dbsnp} '''.format(python3=configDict['python3'], DSBS=configDict['DSBS'], bam=bamFile, ref='hg38' if 'hg38' in configDict['ref'] else 'hg19' ,genomeFile=genomeFile, chr=chr, outdir=outdir,Path=Path, cpu=cpu, dbsnp=configDict['dbsnp'])
             tmplog=outdir+'/log/'+chr+'.'+Path+".snpmeth.log"
             tmplogs.append(tmplog)
             snpCommand   +=outdir +'/' +Path + '/' + op.splitext(os.path.basename(bamFile))[0]+'.Snp.txt   ' 
