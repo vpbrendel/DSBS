@@ -37,7 +37,7 @@ def checkDir(path):
 
 def checkFile(File):
     if not op.exists(File):
-        sys.stderr.write(colored('ERROR: {} is not existed! \n'.format(File),'red'))
+        sys.stderr.write(colored('ERROR: {} does not exist! \n'.format(File),'red'))
         sys.exit(1)
     else:
         return 1
@@ -796,7 +796,7 @@ def main():
     resDict={}
     softDict={}
     if not op.exists(config):
-        sys.stderr.write(colored("ERROR: config {} is not existed!\n".format(config),'red'))
+        sys.stderr.write(colored("ERROR: config {} does not exist!\n".format(config),'red'))
     else:
         with open(config,'r') as A1:
             for line in A1.readlines():

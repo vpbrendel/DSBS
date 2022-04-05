@@ -4,16 +4,16 @@ import sys,getopt,os,gzip,time,re
 def usage():
     print('''\033[01;33m
         usage: python %s -option  <argement> 
-                    --node      deaufalt is 1
-                                    1: which is chosed by the program
+                    --node      default is 1
+                                    1: which is chosen by the program
                                     node_name:the one of all nodes
-                    --cpu       deaufalt is 1
-                    --jobname   deaufalt 
+                    --cpu       default is 1
+                    --jobname   default 
                     --work      is necessary
-                    --mem       deaufalt is none
-                    --auto      deaufalt is Y
-                                    Y :node which is chosed by the PBS
-                                    N :node which is chosed by the program
+                    --mem       default is none
+                    --auto      default is Y
+                                    Y :node which is chosen by the PBS
+                                    N :node which is chosen by the program
                     -h/--help'''
     print('''\033[01;32m
 eg:
@@ -92,9 +92,9 @@ def option():
         node = "1"
     if node != "1":
         if node not in node_infor:
-            print("\033[01;31m"+"%s is not existed"%node)
+            print("\033[01;31m"+"%s does not exist"%node)
             node = get_node(node_infor,0)
-            print ("\033[01;31m"+"%s is chosed for %s"%(node,jobname))
+            print ("\033[01;31m"+"%s is chosen for %s"%(node,jobname))
         else:
             node=get_node(node_infor,[node])
             if node == "1": node = get_node(node_infor,0)

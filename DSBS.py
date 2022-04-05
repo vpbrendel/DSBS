@@ -35,7 +35,7 @@ def checkDir(path):
 
 def checkFile(File):
     if not os.path.exists(File):
-        sys.stderr.write(colored('Error: {} is not existed! \n'.format(File),'red'))
+        sys.stderr.write(colored('Error: {} does not exist! \n'.format(File),'red'))
         return 0
     else:
         return 1
@@ -1127,72 +1127,72 @@ def snpOutput(ref, bam, genomeFile, dbsnp, CHR, outDir, cpu=50, maxDistance=50, 
         #if i !=3:continue
         if snpList[i] =='-' :
             if i ==nu:
-                sys.stderr.write(colored('Error: snpList, {} {} {}-{} is wrong!\n'.format(CHR,i,i*100000,CHRs[CHR]),'red'))
+                sys.stderr.write(colored('Error: snpList, {} {} {}-{} is empty!\n'.format(CHR,i,i*100000,CHRs[CHR]),'red'))
             else:
-                sys.stderr.write(colored('Error: snpList, {} {} {}-{} is wrong!\n'.format(CHR,i,i*100000,(i+1)*100000),'red'))
+                sys.stderr.write(colored('Error: snpList, {} {} {}-{} is empty!\n'.format(CHR,i,i*100000,(i+1)*100000),'red'))
             #continue
         else:
             snpFile.write(snpList[i])
 
         if indelList[i] =='-' :
             if i ==nu:
-                sys.stderr.write(colored('Error: indelList, {} {} {}-{} is wrong!\n'.format(CHR,i,i*100000,CHRs[CHR]),'red'))
+                sys.stderr.write(colored('Error: indelList, {} {} {}-{} is empty!\n'.format(CHR,i,i*100000,CHRs[CHR]),'red'))
             else:
-                sys.stderr.write(colored('Error: indelList, {} {} {}-{} is wrong!\n'.format(CHR,i,i*100000,(i+1)*100000),'red'))
+                sys.stderr.write(colored('Error: indelList, {} {} {}-{} is empty!\n'.format(CHR,i,i*100000,(i+1)*100000),'red'))
             #continue
         else:
             indelFile.write(indelList[i])
        
         if  methyList[i] == '-':
             if i ==nu:
-                sys.stderr.write(colored('Error: methyList, {} {} {}-{} is wrong!\n'.format(CHR,i,i*100000,CHRs[CHR]),'red'))
+                sys.stderr.write(colored('Error: methyList, {} {} {}-{} is empty!\n'.format(CHR,i,i*100000,CHRs[CHR]),'red'))
             else:
-                sys.stderr.write(colored('Error: methyList, {} {} {}-{} is wrong!\n'.format(CHR,i,i*100000,(i+1)*100000),'red'))
+                sys.stderr.write(colored('Error: methyList, {} {} {}-{} is empty!\n'.format(CHR,i,i*100000,(i+1)*100000),'red'))
         else:
             MethFile.write(methyList[i])
         if cpgList[i] == '-':
             if i==nu:
-                sys.stderr.write(colored('Error: cpgList, {} {} {}-{} is wrong!\n'.format(CHR,i,i*100000,CHRs[CHR]),'red'))
+                sys.stderr.write(colored('Error: cpgList, {} {} {}-{} is empty!\n'.format(CHR,i,i*100000,CHRs[CHR]),'red'))
             else:
-                sys.stderr.write(colored('Error: cpgList, {} {} {}-{} is wrong!\n'.format(CHR,i,i*100000,(i+1)*100000),'red'))
+                sys.stderr.write(colored('Error: cpgList, {} {} {}-{} is empty!\n'.format(CHR,i,i*100000,(i+1)*100000),'red'))
         else:
             cpgFile.write(cpgList[i])
         if chgList[i] == '-':
             if i==nu:
-                sys.stderr.write(colored('Error: chgList, {} {} {}-{} is wrong!\n'.format(CHR,i,i*100000,CHRs[CHR]),'red'))
+                sys.stderr.write(colored('Error: chgList, {} {} {}-{} is empty!\n'.format(CHR,i,i*100000,CHRs[CHR]),'red'))
             else:
-                sys.stderr.write(colored('Error: chgList, {} {} {}-{} is wrong!\n'.format(CHR,i,i*100000,(i+1)*100000),'red'))
+                sys.stderr.write(colored('Error: chgList, {} {} {}-{} is empty!\n'.format(CHR,i,i*100000,(i+1)*100000),'red'))
         else:
             chgFile.write(chgList[i])
         if chhList[i] == '-':
             if i==nu:
-                sys.stderr.write(colored('Error: chhList, {} {} {}-{} is wrong!\n'.format(CHR,i,i*100000,CHRs[CHR]),'red'))
+                sys.stderr.write(colored('Error: chhList, {} {} {}-{} is empty!\n'.format(CHR,i,i*100000,CHRs[CHR]),'red'))
             else:
-                sys.stderr.write(colored('Error: chhList, {} {} {}-{} is wrong!\n'.format(CHR,i,i*100000,(i+1)*100000),'red'))
+                sys.stderr.write(colored('Error: chhList, {} {} {}-{} is empty!\n'.format(CHR,i,i*100000,(i+1)*100000),'red'))
         else:
             chhFile.write(chhList[i])
 
         if cpgAppearList[i] == '-':
             if i==nu:
-                sys.stderr.write(colored('Error: chhList, {} {} {}-{} is wrong!\n'.format(CHR,i,i*100000,CHRs[CHR]),'red'))
+                sys.stderr.write(colored('Error: chhList, {} {} {}-{} is empty!\n'.format(CHR,i,i*100000,CHRs[CHR]),'red'))
             else:
-                sys.stderr.write(colored('Error: chhList, {} {} {}-{} is wrong!\n'.format(CHR,i,i*100000,(i+1)*100000),'red'))
+                sys.stderr.write(colored('Error: chhList, {} {} {}-{} is empty!\n'.format(CHR,i,i*100000,(i+1)*100000),'red'))
         else:
             cpgAppearFile.write(cpgAppearList[i])
 
         if cpgDisappearList[i] == '-':
             if i==nu:
-                sys.stderr.write(colored('Error: chhList, {} {} {}-{} is wrong!\n'.format(CHR,i,i*100000,CHRs[CHR]),'red'))
+                sys.stderr.write(colored('Error: chhList, {} {} {}-{} is empty!\n'.format(CHR,i,i*100000,CHRs[CHR]),'red'))
             else:
-                sys.stderr.write(colored('Error: chhList, {} {} {}-{} is wrong!\n'.format(CHR,i,i*100000,(i+1)*100000),'red'))
+                sys.stderr.write(colored('Error: chhList, {} {} {}-{} is empty!\n'.format(CHR,i,i*100000,(i+1)*100000),'red'))
         else:
             cpgDisappearFile.write(cpgDisappearList[i])
             
         if hemiMethyList[i] == '-':
             if i==nu:
-                sys.stderr.write(colored('Error: hemiMethyList, {} {} {}-{} is wrong!\n'.format(CHR,i,i*100000,CHRs[CHR]),'red'))
+                sys.stderr.write(colored('Error: hemiMethyList, {} {} {}-{} is empty!\n'.format(CHR,i,i*100000,CHRs[CHR]),'red'))
             else:
-                sys.stderr.write(colored('Error: hemiMethyList, {} {} {}-{} is wrong!\n'.format(CHR,i,i*100000,(i+1)*100000),'red'))
+                sys.stderr.write(colored('Error: hemiMethyList, {} {} {}-{} is empty!\n'.format(CHR,i,i*100000,(i+1)*100000),'red'))
         else:
             hemiMethyFile.write(hemiMethyList[i])
             
