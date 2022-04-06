@@ -13,7 +13,7 @@ import os,sys
 import re
 import string
 import argparse
-from pyfasta import Fasta
+from pyfaidx import Fasta
 from collections import defaultdict
 import pysam
 from  multiprocessing import Pool,Manager
@@ -325,11 +325,11 @@ def pairCheckSnp(Mut_stand,baseDict,refNuc,IsSNP,Ismethy,minVaf):
 
                     
                     
-def sub_snpOutput(ID,START,END,BAM, GENOME,dbsnp, CHR, snpList,methyList,indelList,cpgList,chgList,chhList,cpgAppearList,cpgDisappearList,hemiMethyList,Mut_stand,maxDistance,maxLen,minLen,minReadQual,minReadQualN,maxN,maxSeqErr,maxSnp,maxIndel,maxBp,maxMut,minQual,minVaf,secAlign,strand,quite,debug):
+def sub_snpOutput(ID,START,END,BAM, GENOME,dbsnp, CHR, snpList,methyList,indelList,cpgList,chgList,chhList,cpgAppearList,cpgDisappearList,hemiMethyList,Mut_stand,maxDistance,maxLen,minLen,minReadQual,minReadQualN,maxN,maxSeqErr,maxSnp,maxIndel,maxBp,maxMut,minQual,minVaf,secAlign,strand,quiet,debug):
 
     #global methyList,snpList
     global dbsnp_tb 
-    if not quite:sys.stdout.write(colored('INOFR: {}\t{}\t{}\t{} is processesing\n'.format(CHR,ID,START,END),'green'))
+    if not quiet:sys.stdout.write(colored('INOFR: {}\t{}\t{}\t{} is processesing\n'.format(CHR,ID,START,END),'green'))
     startT=time.time()
     openFile = Fasta(GENOME)
     
@@ -959,7 +959,7 @@ def sub_snpOutput(ID,START,END,BAM, GENOME,dbsnp, CHR, snpList,methyList,indelLi
                 INDELCon+="{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(chr,pos+1,db_id,delcon,'-',indelDict[indel][chr][pos]['mutcoverage'],indelDict[indel][chr][pos]['paircoverage'],indelDict[indel][chr][pos]['allcoverage'])
 
 
-    if not quite:
+    if not quiet:
         sys.stdout.write(colored('INFOR: thread {},  snpcons                            {}.\n'.format(ID,SNPCon.count("\n")),       'green'))
         sys.stdout.write(colored('INFOR: thread {},  indelcons                          {}.\n'.format(ID,INDELCon.count("\n")),     'green'))
         sys.stdout.write(colored('INFOR: thread {},  methycons                          {}.\n'.format(ID,MethyCon.count("\n")),     'green'))
@@ -985,12 +985,12 @@ def sub_snpOutput(ID,START,END,BAM, GENOME,dbsnp, CHR, snpList,methyList,indelLi
     cpgDisappearList[ID]= CpG_disappear
     hemiMethyList[ID]    = HemimethyCon
 
-    if not quite:sys.stdout.write(colored('INFOR: {} {} was finished! Used time are {}S!\n'.format(CHR,ID,int(time.time()-startT)), 'green'))
+    if not quiet:sys.stdout.write(colored('INFOR: {} {} was finished! Used time are {}S!\n'.format(CHR,ID,int(time.time()-startT)), 'green'))
 
 
 
 
-def snpOutput(ref, bam, genomeFile, dbsnp, CHR, outDir, cpu=50, maxDistance=50, maxLen=200, minLen=50, minReadQual=20, minReadQualN=0.6, maxN=5, maxSeqErr=10, maxSnp=5, maxIndel=1, maxBp=50, maxMut=3, minQual=20, minVaf=0.01, secAlign=False, strand=False, quite=False, debug=False):
+def snpOutput(ref, bam, genomeFile, dbsnp, CHR, outDir, cpu=50, maxDistance=50, maxLen=200, minLen=50, minReadQual=20, minReadQualN=0.6, maxN=5, maxSeqErr=10, maxSnp=5, maxIndel=1, maxBp=50, maxMut=3, minQual=20, minVaf=0.01, secAlign=False, strand=False, quiet=False, debug=False):
 
     global methyList,snpList
     #hg19 chromosome  length
@@ -1054,34 +1054,34 @@ def snpOutput(ref, bam, genomeFile, dbsnp, CHR, outDir, cpu=50, maxDistance=50, 
     #bam = pysam.Samfile(bamfile, 'rb')
 
     sys.stdout.write("\n")
-    sys.stdout.write(colored('INFOR:  version:                     {}\n'.format(__version__ ), 'green'))
-    sys.stdout.write(colored('INFOR:  date:                        {}\n'.format(__date__    ), 'green'))
-    sys.stdout.write(colored('INFOR:  author:                      {}\n'.format(__author__  ), 'green'))
-    sys.stdout.write(colored('INFOR:  email:                       {}\n'.format(__email__   ), 'green'))
-    sys.stdout.write(colored("INFOR:  bam:                         {}\n".format(bam         ), 'green'))
-    sys.stdout.write(colored("INFOR:  reference genome:            {}\n".format(genomeFile  ), 'green'))
-    sys.stdout.write(colored("INFOR:  dbsnp:                       {}\n".format(dbsnp       ), 'green'))
-    sys.stdout.write(colored("INFOR:  chromosome:                  {}\n".format(CHR         ), 'green'))
-    sys.stdout.write(colored("INFOR:  outDir:                      {}\n".format(outDir      ), 'green'))
-    sys.stdout.write(colored("INFOR:  maxDistance:                 {}\n".format(maxDistance ), 'green'))
-    sys.stdout.write(colored("INFOR:  maxLen:                      {}\n".format(maxLen      ), 'green'))
-    sys.stdout.write(colored("INFOR:  minLen:                      {}\n".format(minLen      ), 'green'))
-    sys.stdout.write(colored("INFOR:  minReadQual:                 {}\n".format(minReadQual ), 'green'))
-    sys.stdout.write(colored("INFOR:  minReadQualN:                {}\n".format(minReadQualN), 'green'))
-    sys.stdout.write(colored("INFOR:  maxN:                        {}\n".format(maxN        ), 'green'))
-    sys.stdout.write(colored("INFOR:  maxSeqErr:                   {}\n".format(maxSeqErr   ), 'green'))
-    sys.stdout.write(colored("INFOR:  maxSnp:                      {}\n".format(maxSnp      ), 'green'))
-    sys.stdout.write(colored("INFOR:  maxIndel:                    {}\n".format(maxIndel    ), 'green'))
-    sys.stdout.write(colored("INFOR:  maxBp:                       {}\n".format(maxBp       ), 'green'))
-    sys.stdout.write(colored("INFOR:  maxMut:                      {}\n".format(maxMut      ), 'green'))
-    sys.stdout.write(colored("INFOR:  minQual:                     {}\n".format(minQual     ), 'green'))
-    sys.stdout.write(colored("INFOR:  minVaf:                      {}\n".format(minVaf      ), 'green'))
-    sys.stdout.write(colored("INFOR:  secAlign:                    {}\n".format(secAlign    ), 'green'))
-    sys.stdout.write(colored("INFOR:  strand:                      {}\n".format(strand      ), 'green'))
-    sys.stdout.write(colored("INFOR:  quite:                       {}\n".format(quite       ), 'green'))
-    sys.stdout.write(colored("INFOR:  debug:                       {}\n".format(debug       ), 'green'))
-    sys.stdout.write(colored("INFOR:  starting time:               {}\n".format(getTime()  ), 'green'))
-    sys.stdout.write(colored("INFOR:  starting to deal chromosome  {}\n".format(CHR         ), 'green'))
+    sys.stdout.write(colored('INFOR:  version:                        {}\n'.format(__version__ ), 'green'))
+    sys.stdout.write(colored('INFOR:  date:                           {}\n'.format(__date__    ), 'green'))
+    sys.stdout.write(colored('INFOR:  author:                         {}\n'.format(__author__  ), 'green'))
+    sys.stdout.write(colored('INFOR:  email:                          {}\n'.format(__email__   ), 'green'))
+    sys.stdout.write(colored("INFOR:  bam:                            {}\n".format(bam         ), 'green'))
+    sys.stdout.write(colored("INFOR:  reference genome:               {}\n".format(genomeFile  ), 'green'))
+    sys.stdout.write(colored("INFOR:  dbsnp:                          {}\n".format(dbsnp       ), 'green'))
+    sys.stdout.write(colored("INFOR:  chromosome:                     {}\n".format(CHR         ), 'green'))
+    sys.stdout.write(colored("INFOR:  outDir:                         {}\n".format(outDir      ), 'green'))
+    sys.stdout.write(colored("INFOR:  maxDistance:                    {}\n".format(maxDistance ), 'green'))
+    sys.stdout.write(colored("INFOR:  maxLen:                         {}\n".format(maxLen      ), 'green'))
+    sys.stdout.write(colored("INFOR:  minLen:                         {}\n".format(minLen      ), 'green'))
+    sys.stdout.write(colored("INFOR:  minReadQual:                    {}\n".format(minReadQual ), 'green'))
+    sys.stdout.write(colored("INFOR:  minReadQualN:                   {}\n".format(minReadQualN), 'green'))
+    sys.stdout.write(colored("INFOR:  maxN:                           {}\n".format(maxN        ), 'green'))
+    sys.stdout.write(colored("INFOR:  maxSeqErr:                      {}\n".format(maxSeqErr   ), 'green'))
+    sys.stdout.write(colored("INFOR:  maxSnp:                         {}\n".format(maxSnp      ), 'green'))
+    sys.stdout.write(colored("INFOR:  maxIndel:                       {}\n".format(maxIndel    ), 'green'))
+    sys.stdout.write(colored("INFOR:  maxBp:                          {}\n".format(maxBp       ), 'green'))
+    sys.stdout.write(colored("INFOR:  maxMut:                         {}\n".format(maxMut      ), 'green'))
+    sys.stdout.write(colored("INFOR:  minQual:                        {}\n".format(minQual     ), 'green'))
+    sys.stdout.write(colored("INFOR:  minVaf:                         {}\n".format(minVaf      ), 'green'))
+    sys.stdout.write(colored("INFOR:  secAlign:                       {}\n".format(secAlign    ), 'green'))
+    sys.stdout.write(colored("INFOR:  strand:                         {}\n".format(strand      ), 'green'))
+    sys.stdout.write(colored("INFOR:  quiet:                          {}\n".format(quiet       ), 'green'))
+    sys.stdout.write(colored("INFOR:  debug:                          {}\n".format(debug       ), 'green'))
+    sys.stdout.write(colored("INFOR:  starting time:                  {}\n".format(getTime()  ), 'green'))
+    sys.stdout.write(colored("INFOR:  starting to process chromosome  {}\n".format(CHR         ), 'green'))
 
 
     #10000bp as a region
@@ -1106,7 +1106,7 @@ def snpOutput(ref, bam, genomeFile, dbsnp, CHR, outDir, cpu=50, maxDistance=50, 
             END=(ID+1)*100000
         else:
             END=CHRs[CHR]
-        pool.apply_async(sub_snpOutput, (ID,START,END,bam,genomeFile,dbsnp,CHR,snpList,methyList,indelList,cpgList,chgList,chhList,cpgAppearList,cpgDisappearList,hemiMethyList,Mut_stand, maxDistance,maxLen,minLen,minReadQual,minReadQualN,maxN,maxSeqErr,maxSnp,maxIndel,maxBp,maxMut,minQual,minVaf,secAlign,strand,quite,debug))
+        pool.apply_async(sub_snpOutput, (ID,START,END,bam,genomeFile,dbsnp,CHR,snpList,methyList,indelList,cpgList,chgList,chhList,cpgAppearList,cpgDisappearList,hemiMethyList,Mut_stand, maxDistance,maxLen,minLen,minReadQual,minReadQualN,maxN,maxSeqErr,maxSnp,maxIndel,maxBp,maxMut,minQual,minVaf,secAlign,strand,quiet,debug))
     pool.close()
     pool.join()
 
@@ -1234,7 +1234,7 @@ def get_parser():
     parser.add_argument('--CHG',         action='store_true',default=False , help='output CHG')
     parser.add_argument('--CHH',         action='store_true',default=False , help='output CHH')
     parser.add_argument('--debug',       action='store_true',default=False , help='dubug mode')
-    parser.add_argument('-q','--quite',  action='store_true',default=False , help='quiet mode')
+    parser.add_argument('-q','--quiet',  action='store_true',default=False , help='quiet mode')
     parser.add_argument('-p', '--cpu',    type=int, default=50, help='the number of working threads, default is 50')
     parser.add_argument('-o', '--outDir', default='', help='the outDir')
     parser.add_argument('-g', '--genomeFile', required=True, help='the chromosome reference fasta')
@@ -1264,7 +1264,7 @@ def main():
     if args.maxMut<0   :                            parser.error("Invalid --maxMut    value,    must >= 0 and <50")
     if args.minQual<0  :                            parser.error("Invalid --minQual   value,    must >= 0 ")
     if args.minVaf <0 or args.minVaf >1:            parser.error("Invalid --minVaf    value,    must >= 0 and <1")
-    snpOutput(args.ref, args.bam, args.genomeFile,args.dbsnp, args.Chr,args.outDir,args.cpu,args.maxDistance,args.maxLen,args.minLen,args.minReadQual,args.minReadQualN,args.maxN,args.maxSeqErr,args.maxSnp,args.maxIndel,args.maxBp,args.maxMut,args.minQual,args.minVaf,args.secAlign,args.strand,args.quite,args.debug)
+    snpOutput(args.ref, args.bam, args.genomeFile,args.dbsnp, args.Chr,args.outDir,args.cpu,args.maxDistance,args.maxLen,args.minLen,args.minReadQual,args.minReadQualN,args.maxN,args.maxSeqErr,args.maxSnp,args.maxIndel,args.maxBp,args.maxMut,args.minQual,args.minVaf,args.secAlign,args.strand,args.quiet,args.debug)
     
 if __name__ == '__main__':
     main()

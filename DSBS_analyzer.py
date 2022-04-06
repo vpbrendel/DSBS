@@ -1,4 +1,4 @@
-#!/public/software/python3
+#!/usr/bin/python3
 #coding=utf-8
 
 
@@ -47,8 +47,8 @@ def writeLog(File,Con):
     with open(File,'w') as A1:
         A1.write(Con)
 
-def systemRun(command,quite=0):
-    if not quite:sys.stdout.write(colored('command: {}\n'.format(command),'green'))
+def systemRun(command,quiet=0):
+    if not quiet:sys.stdout.write(colored('command: {}\n'.format(command),'green'))
     if os.system(command):
         sys.stderr.write(colored('EEROR: {} \n'.format(command),'red'))
         sys.exit(1)
@@ -104,7 +104,7 @@ def qsubRun(logs,commands,cpu=1,check_time=3600):
     for file in logs:
         tmplogs[file]=logs[file]
         sys.stdout.write(colored('command: {}\n'.format(commands[file]),'green'))
-        tmpcommand=""" {python3} {job_sub_py_2}  --cpu {cpu} --work  " {command}  &&  echo it was finished >  {tmplog}" """.format(python3=configDict['python3'], job_sub_py_2=configDict['job_sub_py_2'], cpu=cpu,command=commands[file], tmplog=logs[file])
+        tmpcommand=""" {python3} {job_sub_py_2}  --cpu {cpu} --work  " {command}  &&  echo it was finished >  {tmplog}" """.format(python3=sftDict['python3'], job_sub_py_2=sftDict['job_sub_py_2'], cpu=cpu,command=commands[file], tmplog=logs[file])
         tmpcommands[file]=tmpcommand
         jobID[file]=os.popen(tmpcommand).read().strip().split(".")[0]   #'836836.admin1\n'
         sys.stdout.write(colored("INOFR: file {} jobID is {}\n".format(file,jobID[file]),"green"))
@@ -168,7 +168,7 @@ def fastQC(QcDir,FqList):
     FqList=tmpFqList
     if len(FqList) != 0:
         for  fq in FqList:
-            command[fq]='{fastqc} -o {QcDir} -t 10  {fq} '.format(fastqc=configDict['fastqc'],QcDir=QcDir,fq=fq)
+            command[fq]='{fastqc} -o {QcDir} -t 10  {fq} '.format(fastqc=sftDict['fastqc'],QcDir=QcDir,fq=fq)
             popen[fq]=subprocess.Popen(command[fq], shell=True)
             tmppopen.append(fq)
         err=[]
@@ -227,11 +227,11 @@ def rmdupFq(fq1,fq2,cleandir):
         fq2rmdup=cleandir+"/"+subfq +".2.rmdup.fq"
         if qsub:
             tmplogs.append(tmplog)
-            command='{fastuniq}  -i {input_list} -t q -o {fq1rmdup} -p {fq2rmdup} -c 0'.format(fastuniq=configDict['fastuniq'], input_list=cleandir+"/{}.txt".format(subfq), fq1rmdup=fq1rmdup, fq2rmdup=fq2rmdup)
-            command=" {python3} {job_sub_py_2}  --work  ' {command}  &&  echo it was finished >  {tmplog}' ".format(python3=configDict['python3'], job_sub_py_2=configDict['job_sub_py_2'], command=command, tmplog=tmplog)
+            command='{fastuniq}  -i {input_list} -t q -o {fq1rmdup} -p {fq2rmdup} -c 0'.format(fastuniq=sftDict['fastuniq'], input_list=cleandir+"/{}.txt".format(subfq), fq1rmdup=fq1rmdup, fq2rmdup=fq2rmdup)
+            command=" {python3} {job_sub_py_2}  --work  ' {command}  &&  echo it was finished >  {tmplog}' ".format(python3=sftDict['python3'], job_sub_py_2=sftDict['job_sub_py_2'], command=command, tmplog=tmplog)
             systemRun(command)
         else:
-            command[subfq]='{fastuniq}  -i {input_list} -t q -o {fq1rmdup} -p {fq2rmdup} -c 0'.format(fastuniq=configDict['fastuniq'], input_list=cleandir+"/{}.txt".format(subfq), fq1rmdup=fq1rmdup, fq2rmdup=fq2rmdup)
+            command[subfq]='{fastuniq}  -i {input_list} -t q -o {fq1rmdup} -p {fq2rmdup} -c 0'.format(fastuniq=sftDict['fastuniq'], input_list=cleandir+"/{}.txt".format(subfq), fq1rmdup=fq1rmdup, fq2rmdup=fq2rmdup)
             popen[subfq]=subprocess.Popen(command[subfq], shell=True)
         #systemRun(command)
     if qsub:
@@ -303,7 +303,7 @@ def cleanFQ(fq1,fq2,cleanDir):
         sys.stdout.write(colored(a + "\t" + b +"\n",'blue'))
         fq1Clean=cleanDir+"/"+subfq +".1.clean.fq"
         fq2Clean=cleanDir+"/"+subfq +".2.clean.fq"
-        command[subfq]='{cutadapt} -g AATGATACGGCGACCACCGAGATCTACACTCTTTCCCTACACGACGCTCTTCCGATCT   -G CAAGCAGAAGACGGCATACGAGATCGTGATGTGACTGGAGTTCAGACGTGTGCTCTTCCGATCT   -a TGCCAGGTGGTAAGTGAAGTTATTTGGTGT  -A ACACCAAATAACTTCACTTACCACCTGGCA  -a GATCGGAAGAGCACACGTCTACACTCTTTCCCTACACGACGCTCTTCCGATCT -A AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTAGACGTGTGCTCTTCCGATC   -q {cleanquality},{cleanquality} --minimum-length 50   -o {fq1c} -p {fq2c}  {Fq1}   {Fq2}'.format(cutadapt=configDict['cutadapt'], cleanquality=cleanquality,fq1c=fq1Clean, fq2c=fq2Clean, Fq1=a ,Fq2=b )  
+        command[subfq]='{cutadapt} -g AATGATACGGCGACCACCGAGATCTACACTCTTTCCCTACACGACGCTCTTCCGATCT   -G CAAGCAGAAGACGGCATACGAGATCGTGATGTGACTGGAGTTCAGACGTGTGCTCTTCCGATCT   -a TGCCAGGTGGTAAGTGAAGTTATTTGGTGT  -A ACACCAAATAACTTCACTTACCACCTGGCA  -a GATCGGAAGAGCACACGTCTACACTCTTTCCCTACACGACGCTCTTCCGATCT -A AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTAGACGTGTGCTCTTCCGATC   -q {cleanquality},{cleanquality} --minimum-length 50   -o {fq1c} -p {fq2c}  {Fq1}   {Fq2}'.format(cutadapt=sftDict['cutadapt'], cleanquality=cleanquality,fq1c=fq1Clean, fq2c=fq2Clean, Fq1=a ,Fq2=b )  
         print(command[subfq])
 
         popen[subfq]=subprocess.Popen(command[subfq], shell=True)
@@ -332,7 +332,7 @@ def filterFq(Fq1,Fq2):
             signal =filter_fq.start(40,Fq1,Fq2,True)
         if not signal:
             writeLog(outdir+'/log/'+subfq+".filterFq.log",'it was finished\n')
-        #command='{python3} {filter_fq}  {Fq1} {Fq2} -t 40 '.format(python3=configDict['python3'], filter_fq=configDict['filter_fq'], Fq1=Fq1, Fq2=Fq2)
+        #command='{python3} {filter_fq}  {Fq1} {Fq2} -t 40 '.format(python3=sftDict['python3'], filter_fq=sftDict['filter_fq'], Fq1=Fq1, Fq2=Fq2)
         #systemRun(command)
 
 
@@ -348,7 +348,7 @@ def bsmap(Fq1,Fq2,AlignDir):
         bam='{}/{}.bsmap.bam'.format(AlignDir,subfq)
         filterFq(cleanq1,cleanq2)
         if  not op.exists(outdir+'/log/'+subfq+".bsmap.log"): 
-            command= """{bsmap}  -a  {FqClean1}  -b  {FqClean2}  -d  {Ref}    -m 10 -x 500  -S 1 -z 33  -s 16  -g 3 -n 1 -q 0 -f 5 -p 24 -u -r 1 -v 0.08  |awk ' $6 !~/-/ && $6 !~ /[DI]0M$/'| {samtools} view -b -S - -o  {Bam}""".format(bsmap=configDict['bsmap'], FqClean1=cleanq1+".passed", FqClean2=cleanq2+".passed", Ref=ref, Bam=bam, samtools=configDict['samtools'])
+            command= """{bsmap}  -a  {FqClean1}  -b  {FqClean2}  -d  {Ref}    -m 10 -x 500  -S 1 -z 33  -s 16  -g 3 -n 1 -q 0 -f 5 -p 24 -u -r 1 -v 0.08  |awk ' $6 !~/-/ && $6 !~ /[DI]0M$/'| {samtools} view -b -S - -o  {Bam}""".format(bsmap=sftDict['bsmap'], FqClean1=cleanq1+".passed", FqClean2=cleanq2+".passed", Ref=ref, Bam=bam, samtools=sftDict['samtools'])
             tmplog=outdir+'/log/'+subfq+".bsmap.log"
             tmplogs[bam]=tmplog
             commands[bam]=command
@@ -363,17 +363,17 @@ def pickUpSam(bams):
     for bam in bams:
         log=outdir+"/log/"+op.basename(bam)[:-3]+"stdmap.log"
         if not op.exists(log):
-            command='''{samtools} view -h -F  12 {bam}  | awk -f {stdmap_awk}  |{samtools} view -bS - > {stdBAM}'''.format(samtools=configDict['samtools'],stdmap_awk=configDict['stdmap_awk'],bam=bam,stdBAM=bam[:-3]+'std.map.bam')
+            command='''{samtools} view -h -F  12 {bam}  | awk -f {stdmap_awk}  |{samtools} view -bS - > {stdBAM}'''.format(samtools=sftDict['samtools'],stdmap_awk=sftDict['stdmap_awk'],bam=bam,stdBAM=bam[:-3]+'std.map.bam')
             tmplogs[bam+'std']=log
             commands[bam+'std']=command
         # log=outdir+"/log/"+op.basename(bam)[:-3]+"diffmap.log"
         # if not op.exists(log):
-            # command='''{samtools} view -F 12 {bam}  | awk -f {diffmap_awk} >{diffmap}'''.format(samtools=configDict['samtools'] ,diffmap_awk=configDict['diffmap_awk'],bam=bam,diffmap=bam[:-3]+"diffReadsName" )
+            # command='''{samtools} view -F 12 {bam}  | awk -f {diffmap_awk} >{diffmap}'''.format(samtools=sftDict['samtools'] ,diffmap_awk=sftDict['diffmap_awk'],bam=bam,diffmap=bam[:-3]+"diffReadsName" )
             # tmplogs[bam+'err']=log
             # commands[bam+'err']=command
         # log=outdir+"/log/"+op.basename(bam)[:-3]+"unmap.log"
         # if not op.exists(log):
-            # command='''{samtools} view  -f 4  {bam}  | cut -f 1 >{unmap1} && samtools view  -f 8 {bam}  | cut -f 1 >{unmap2} && cat {unmap1} {unmap2} >{unmap}'''.format(samtools=configDict['samtools'],bam=bam,unmap1=bam[:-3]+'UnMap1',unmap2=bam[:-3]+"UnMap2",unmap=bam[:-3]+"unmapReadName")
+            # command='''{samtools} view  -f 4  {bam}  | cut -f 1 >{unmap1} && samtools view  -f 8 {bam}  | cut -f 1 >{unmap2} && cat {unmap1} {unmap2} >{unmap}'''.format(samtools=sftDict['samtools'],bam=bam,unmap1=bam[:-3]+'UnMap1',unmap2=bam[:-3]+"UnMap2",unmap=bam[:-3]+"unmapReadName")
             # tmplogs[bam+"unmap"]=log
             # commands[bam+"unmap"]=command
     if qsub:
@@ -395,7 +395,7 @@ def bisSNP(inbams):
         withRGBam=inbam[:-3]+"withRG.bam"
         tmplog=outdir+'/log/'+op.basename(withRGBam)[:-3]+"log"
         if  not op.exists(tmplog): 
-            command='''{java} -Xmx4g -jar {picard} AddOrReplaceReadGroups  I={inbam} O={withRGBam} ID=ceshi LB=lib1 PL=illumina PU=unit1 SM=S103 VALIDATION_STRINGENCY=SILENT'''.format(java=configDict['java'],picard=configDict['picard'],inbam=inbam,withRGBam=withRGBam)
+            command='''{java} -Xmx4g -jar {picard} AddOrReplaceReadGroups  I={inbam} O={withRGBam} ID=ceshi LB=lib1 PL=illumina PU=unit1 SM=S103 VALIDATION_STRINGENCY=SILENT'''.format(java=sftDict['java'],picard=sftDict['picard'],inbam=inbam,withRGBam=withRGBam)
             #samtools index S103.withRG.bam
             tmplogs[withRGBam]=tmplog
             commands[withRGBam]=command
@@ -411,7 +411,7 @@ def bisSNP(inbams):
         withRGBam=inbam[:-3]+"withRG.bam"
         tmplog=outdir+'/log/'+op.basename(withRGBam)[:-3]+"index.log"
         if  not op.exists(tmplog):
-            command='''{samtools} index {withRGBam}'''.format(withRGBam=withRGBam,samtools=configDict['samtools'])
+            command='''{samtools} index {withRGBam}'''.format(withRGBam=withRGBam,samtools=sftDict['samtools'])
             tmplogs[withRGBam]=tmplog
             commands[withRGBam]=command
     if len(commands) >0:
@@ -425,7 +425,7 @@ def bisSNP(inbams):
         withRGBam=inbam[:-3]+"withRG.bam"
         tmplog=outdir+'/log/'+op.basename(intervals)+'.log'
         if  not op.exists(tmplog): 
-            command= """{java} -Xmx2g -jar {bissnp} -R {ref} -I {withRGBam} -T BisulfiteRealignerTargetCreator {known}  -o {intervals} -nt 10""".format(java=configDict['java1.6'],bissnp=configDict['bissnp'],ref=ref,known="-known\t" + "\t-known\t".join(knownsites),withRGBam=withRGBam,intervals=intervals)
+            command= """{java} -Xmx2g -jar {bissnp} -R {ref} -I {withRGBam} -T BisulfiteRealignerTargetCreator {known}  -o {intervals} -nt 10""".format(java=sftDict['java'],bissnp=sftDict['bissnp'],ref=ref,known="-known\t" + "\t-known\t".join(knownsites),withRGBam=withRGBam,intervals=intervals)
             tmplogs[intervals]=tmplog
             commands[intervals]=command
     if len(commands)>0:
@@ -442,7 +442,7 @@ def bisSNP(inbams):
         realignedBam=withRGBam[:-3]+"realigned.bam"
         tmplog=outdir+'/log/'+op.basename(realignedBam)[:-3]+'log'
         if  not op.exists(tmplog): 
-            command="""{java} -Xmx10g -jar  {bissnp} -R {ref} -I {withRGBam} -T BisulfiteIndelRealigner -targetIntervals {intervals} {known} -cigar -o {realignedBam}""".format(java=configDict['java1.6'],bissnp=configDict['bissnp'],ref=ref,withRGBam=withRGBam,intervals=intervals ,known="-known\t" + "\t-known\t".join(knownsites),realignedBam=realignedBam)
+            command="""{java} -Xmx10g -jar  {bissnp} -R {ref} -I {withRGBam} -T BisulfiteIndelRealigner -targetIntervals {intervals} {known} -cigar -o {realignedBam}""".format(java=sftDict['java'],bissnp=sftDict['bissnp'],ref=ref,withRGBam=withRGBam,intervals=intervals ,known="-known\t" + "\t-known\t".join(knownsites),realignedBam=realignedBam)
             ##may add  --maxReadsInMemory 1000000 
             tmplogs[realignedBam]=tmplog
             commands[realignedBam]=command
@@ -463,7 +463,7 @@ def bisSNP(inbams):
         realignedBam=withRGBam[:-3]+"realigned.bam"
         tmplog=outdir+'/log/'+op.basename(recalFile)[:-3]+'log'
         if  not op.exists(tmplog): 
-            command="""{java} -Xmx2g -jar {bissnp} -R {ref} -I {realignedBam} -T BisulfiteCountCovariates {knownSites}  -cov ReadGroupCovariate -cov QualityScoreCovariate  -cov CycleCovariate  -recalFile {recalFile} -nt 10""".format(java=configDict['java1.6'],bissnp=configDict['bissnp'],realignedBam=realignedBam,ref=ref,knownSites="-knownSites\t" + "\t-knownSites\t".join(knownsites),recalFile=recalFile)
+            command="""{java} -Xmx2g -jar {bissnp} -R {ref} -I {realignedBam} -T BisulfiteCountCovariates {knownSites}  -cov ReadGroupCovariate -cov QualityScoreCovariate  -cov CycleCovariate  -recalFile {recalFile} -nt 10""".format(java=sftDict['java'],bissnp=sftDict['bissnp'],realignedBam=realignedBam,ref=ref,knownSites="-knownSites\t" + "\t-knownSites\t".join(knownsites),recalFile=recalFile)
             tmplogs[recalFile]=tmplog
             commands[recalFile]=command
     if len(commands)>0:
@@ -482,7 +482,7 @@ def bisSNP(inbams):
         recalFile=withRGBam[:-3]+"recalFile.csv"
         realignedBam=withRGBam[:-3]+"realigned.bam"
         if  not op.exists(tmplog): 
-            command="""{java} -Xmx10g -jar  {bissnp} -R  {ref}  -I  {realignedBam} -o {recalBam} -T BisulfiteTableRecalibration -recalFile {recalFile} -maxQ 40""".format(java=configDict['java1.6'],bissnp=configDict['bissnp'],known="-known\t" + "\t-known\t".join(knownsites),ref=ref,realignedBam=realignedBam,recalBam=recalBam,recalFile=recalFile)
+            command="""{java} -Xmx10g -jar  {bissnp} -R  {ref}  -I  {realignedBam} -o {recalBam} -T BisulfiteTableRecalibration -recalFile {recalFile} -maxQ 40""".format(java=sftDict['java'],bissnp=sftDict['bissnp'],known="-known\t" + "\t-known\t".join(knownsites),ref=ref,realignedBam=realignedBam,recalBam=recalBam,recalFile=recalFile)
             tmplogs[recalBam]=tmplog
             commands[recalBam]=command
     if len(commands)>0:
@@ -500,7 +500,7 @@ def rmdupBam(Bams,rmdupBAMs):
         log=outdir+'/log/'+op.basename(rmdupBAM)+".PicardRmdupBAM.log"
         if  not op.exists(log):
             logs[Bam]=log
-            commands[Bam]='{java} -jar {picard} MarkDuplicates I={sortedBAM} O={rmdupBAM} M={outdir}/marked_dup_metrics.txt  REMOVE_DUPLICATES=true'.format(java=configDict['java'], picard=configDict['picard'], sortedBAM=Bam, rmdupBAM=rmdupBAM, outdir=op.dirname(rmdupBAM))
+            commands[Bam]='{java} -jar {picard} MarkDuplicates I={sortedBAM} O={rmdupBAM} M={outdir}/marked_dup_metrics.txt  REMOVE_DUPLICATES=true'.format(java=sftDict['java'], picard=sftDict['picard'], sortedBAM=Bam, rmdupBAM=rmdupBAM, outdir=op.dirname(rmdupBAM))
     if qsub:
         qsubRun(logs,commands,5,3600*2)
     else:
@@ -513,7 +513,7 @@ def rmdupBam2(Bams,rmdupBAMs):
         log=outdir+'/log/'+op.basename(rmdupBAM)+".SamtoolsRmdupBAM.log"
         if  not op.exists(log):
             logs[Bam]=log
-            commands[Bam]='{samtools} rmdup {Bam} {rmdupBAM}'.format(samtools=configDict['samtools'], Bam=Bam, rmdupBAM=rmdupBAM)
+            commands[Bam]='{samtools} rmdup {Bam} {rmdupBAM}'.format(samtools=sftDict['samtools'], Bam=Bam, rmdupBAM=rmdupBAM)
     if qsub:
         qsubRun(logs,commands,5,3600*2)
     else:
@@ -526,7 +526,7 @@ def cleanSam(Bams,cleanBams):
         log=outdir+'/log/'+op.basename(Bam)+".cleanSam.log"
         if  not op.exists(log):
             logs[Bam]=log
-            commands[Bam] = '{java} -jar {picard} CleanSam  I={Bam}  O={cleanBam} '.format(java=configDict['java'], picard=configDict['picard'], Bam=Bam, cleanBam=cleanBam)
+            commands[Bam] = '{java} -jar {picard} CleanSam  I={Bam}  O={cleanBam} '.format(java=sftDict['java'], picard=sftDict['picard'], Bam=Bam, cleanBam=cleanBam)
     if qsub:
         qsubRun(logs,commands,5,3600*2)
     else:
@@ -536,13 +536,13 @@ def cleanSam(Bams,cleanBams):
 
 def mergeBam(Bams,mergeBam):
     if  not op.exists(outdir+'/log/'+op.basename(mergeBam)+".mergeBam.log"): 
-        command = '{samtools} merge -@ 30 {mergebam} {bamlist} '.format(samtools=configDict['samtools'], mergebam=mergeBam, bamlist=" ".join(Bams) )
+        command = '{samtools} merge -@ 30 {mergebam} {bamlist} '.format(samtools=sftDict['samtools'], mergebam=mergeBam, bamlist=" ".join(Bams) )
         systemRun(command)
         writeLog(outdir+'/log/'+op.basename(mergeBam)+".mergeBam.log",'it was finished\n')
 
 def sortedBam(Bam,sortedBAM):
     if not  op.exists(outdir+'/log/'+op.basename(sortedBAM)+".sortedBAM.log"): 
-        command = ' {samtools} sort  -@ 30 {bam}  -o {sortedBam}'.format(samtools=configDict['samtools'], bam=Bam,sortedBam=sortedBAM)
+        command = ' {samtools} sort  -@ 30 {bam}  -o {sortedBam}'.format(samtools=sftDict['samtools'], bam=Bam,sortedBam=sortedBAM)
         systemRun(command)
         writeLog(outdir+'/log/'+op.basename(sortedBAM)+".sortedBAM.log",'it was finished\n')
 
@@ -553,7 +553,7 @@ def splitBam(Bam):
         1-22,X,Y
     '''
     if not  op.exists(outdir+'/log/'+op.basename(Bam)+".index.log"): 
-        command="{samtools} index {BAM} ".format(samtools=configDict['samtools'], BAM=Bam)
+        command="{samtools} index {BAM} ".format(samtools=sftDict['samtools'], BAM=Bam)
         systemRun(command)
         writeLog(outdir+'/log/'+op.basename(Bam)+".index.log",'it was finished\n')
     popen={}
@@ -563,7 +563,7 @@ def splitBam(Bam):
         for chr in CHR:
             checkDir(outdir+'/chr_BAM/'+chr)
             checkDir(outdir+'/nomal/'+chr)
-            command[chr]='{samtools} view -b  {BAM} {chr} > {path}/{chr}/{chr}.merge.sorted.rmdup.bam  && {samtools} index {path}/{chr}/{chr}.merge.sorted.rmdup.bam '.format(samtools=configDict['samtools'], BAM=Bam, chr=chr, path=outdir+"/chr_BAM" if not "/nomal/Bs.sorted.bam" in Bam else outdir+"/nomal")
+            command[chr]='{samtools} view -b  {BAM} {chr} > {path}/{chr}/{chr}.merge.sorted.rmdup.bam  && {samtools} index {path}/{chr}/{chr}.merge.sorted.rmdup.bam '.format(samtools=sftDict['samtools'], BAM=Bam, chr=chr, path=outdir+"/chr_BAM" if not "/nomal/Bs.sorted.bam" in Bam else outdir+"/nomal")
             popen[chr]=subprocess.Popen(command[chr],shell=True)
         for chr in CHR:popen[chr].wait()
         for chr in CHR:
@@ -578,7 +578,7 @@ def splitBam(Bam):
 
 def bamQC(Bam):
     if not  op.exists(outdir+'/log/'+op.basename(Bam)+".bamQC.log"): 
-        command="{qualimap} bamqc -bam {Bam} --java-mem-size=10G ".format(qualimap=configDict['qualimap'], Bam=Bam)
+        command="{qualimap} bamqc -bam {Bam} --java-mem-size=10G ".format(qualimap=sftDict['qualimap'], Bam=Bam)
         systemRun(command)
         writeLog(outdir+'/log/'+op.basename(Bam)+".bamQC.log",'it was finished\n')
     
@@ -674,8 +674,8 @@ def getSnpAndMeth(outdir):
                     bamFile='{}/{}/{}.merge.sorted.rmdup.bam'.format(outdir+"/"+Path,chr,chr)
             else:
                 bamFile='{}/{}/{}.merge.sorted.rmdup.bam'.format(outdir+"/"+Path,chr,chr)
-            genomeFile='{refDir}/{chr}.fa'.format(refDir=configDict['refDir'], chr=chr)
-            command='''{python3} {DSBS}  {bam} --ref {ref} --Chr {chr} --maxBp 50 --minVaf 0.15 -q -g {genomeFile} -o {outdir}/{Path}/ --cpu {cpu} -d {dbsnp} '''.format(python3=configDict['python3'], DSBS=configDict['DSBS'], bam=bamFile, ref='hg38' if 'hg38' in configDict['ref'] else 'hg19' ,genomeFile=genomeFile, chr=chr, outdir=outdir,Path=Path, cpu=cpu, dbsnp=configDict['dbsnp'])
+            genomeFile='{refDir}/{chr}.fa'.format(refDir=resDict['refDir'], chr=chr)
+            command='''{python3} {DSBS}  {bam} --ref {ref} --Chr {chr} --maxBp 50 --minVaf 0.15 --debug -g {genomeFile} -o {outdir}/{Path}/ --cpu {cpu} -d {dbsnp} '''.format(python3=sftDict['python3'], DSBS=sftDict['DSBS'], bam=bamFile, ref='hg38' if 'hg38' in resDict['ref'] else 'hg19' ,genomeFile=genomeFile, chr=chr, outdir=outdir,Path=Path, cpu=cpu, dbsnp=resDict['dbsnp'])
             tmplog=outdir+'/log/'+chr+'.'+Path+".snpmeth.log"
             tmplogs.append(tmplog)
             snpCommand   +=outdir +'/' +Path + '/' + op.splitext(os.path.basename(bamFile))[0]+'.Snp.txt   ' 
@@ -688,7 +688,7 @@ def getSnpAndMeth(outdir):
                     writeLog(tmplog,'it was finished\n')
                 else:
                     #if  'anzhen' in config:
-                    command1=" {python3} {job_sub_py_2}  --work  '{command}  &&  echo it was finished >  {tmplog}' ".format(python3=configDict['python3'], job_sub_py_2=configDict['job_sub_py_2'],  command=command, tmplog =tmplog)
+                    command1=" {python3} {job_sub_py_2}  --work  '{command}  &&  echo it was finished >  {tmplog}' ".format(python3=sftDict['python3'], job_sub_py_2=sftDict['job_sub_py_2'],  command=command, tmplog =tmplog)
                     systemRun(command1)
                     time.sleep(10)
         snpCommand  +="> {}/{}/{}.Snp.vcf  ".format(outdir,Path,Path)
@@ -773,7 +773,7 @@ def main():
     purpose()
     parser = get_parser()
     args = parser.parse_args()
-    global config,fq1,fq2,ref,adapter,cpu,pp,outdir,qsub,depth,fastquniq,configDict,bissnp,knownsites,gapsize,cleanquality,remove_tmp
+    global config,fq1,fq2,ref,adapter,cpu,pp,outdir,qsub,depth,fastquniq,sftDict,prmDict,resDict,bissnp,knownsites,gapsize,cleanquality,remove_tmp
     
     config      =  args.config
     fq1         =  args.fq1
@@ -794,7 +794,8 @@ def main():
 
     configDict={}
     resDict={}
-    softDict={}
+    sftDict={}
+    prmDict={}
     if not op.exists(config):
         sys.stderr.write(colored("ERROR: config {} does not exist!\n".format(config),'red'))
     else:
@@ -805,12 +806,13 @@ def main():
                 if line.strip() =="": continue
                 temp=line.strip().split(":")
                 configDict[temp[0]]=temp[1]
-                if temp[2]=='soft':
-                    softDict[temp[0]]=temp[1]
+                if temp[2]=='software':
+                    sftDict[temp[0]]=temp[1]
+                elif temp[2]=='parameter':
+                    prmDict[temp[0]]=temp[1]
                 elif temp[2]=='resource':
                     resDict[temp[0]]=temp[1]
 
-    for kk in resDict:configDict[kk]=resDict[kk]
     sys.stdout.write(colored("StartTime: "+ time.strftime("%Y-%m-%d %H:%M:%S",time.localtime())+"\n",'green'))
     sys.stdout.write(colored(sys.argv[0]+"   :version 1.0 "+"\n",'green'))
     #purpose()
@@ -825,17 +827,15 @@ def main():
     ref=ref or resDict['ref']
     if checkFile(ref):
         sys.stdout.write(colored("Reference:\n\t{}\n".format(ref),'blue'))
-        configDict['ref']=ref
-        configDict['refDir']=op.dirname(ref)
+        resDict['ref']=ref
+        resDict['refDir']=op.dirname(ref)
 
     
     print('resDict',resDict)
     tmpKnownsite=[]
     for ks in knownsites:
-        
         if ks in resDict:
             if checkFile(resDict[ks]):
-                configDict[ks]=resDict[ks]
                 tmpKnownsite.append(resDict[ks])
                 sys.stdout.write(colored("knownSite:\n\t{}\n".format(resDict[ks]),'blue'))
         else:
