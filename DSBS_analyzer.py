@@ -303,7 +303,7 @@ def cleanFQ(fq1,fq2,cleanDir):
         sys.stdout.write(colored(a + "\t" + b +"\n",'blue'))
         fq1Clean=cleanDir+"/"+subfq +".1.clean.fq"
         fq2Clean=cleanDir+"/"+subfq +".2.clean.fq"
-        command[subfq]='{cutadapt} -g AATGATACGGCGACCACCGAGATCTACACTCTTTCCCTACACGACGCTCTTCCGATCT   -G CAAGCAGAAGACGGCATACGAGATCGTGATGTGACTGGAGTTCAGACGTGTGCTCTTCCGATCT   -a TGCCAGGTGGTAAGTGAAGTTATTTGGTGT  -A ACACCAAATAACTTCACTTACCACCTGGCA  -a GATCGGAAGAGCACACGTCTACACTCTTTCCCTACACGACGCTCTTCCGATCT -A AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTAGACGTGTGCTCTTCCGATC   -q {cleanquality},{cleanquality} --minimum-length 50   -o {fq1c} -p {fq2c}  {Fq1}   {Fq2}'.format(cutadapt=sftDict['cutadapt'], cleanquality=cleanquality,fq1c=fq1Clean, fq2c=fq2Clean, Fq1=a ,Fq2=b )  
+        command[subfq]='{cutadapt} -g AATGATACGGCGACCACCGAGATCTACACTCTTTCCCTACACGACGCTCTTCCGATCT   -G CAAGCAGAAGACGGCATACGAGATCGTGATGTGACTGGAGTTCAGACGTGTGCTCTTCCGATCT   -a TGCCAGGTGGTAAGTGAAGTTATTTGGTGT  -A ACACCAAATAACTTCACTTACCACCTGGCA  -a GATCGGAAGAGCACACGTCTACACTCTTTCCCTACACGACGCTCTTCCGATCT -A AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTAGACGTGTGCTCTTCCGATC   -q {cleanquality},{cleanquality} {cutadapt_param}   -o {fq1c} -p {fq2c}  {Fq1}   {Fq2}'.format(cutadapt=sftDict['cutadapt'], cleanquality=cleanquality, cutadapt_param=prmDict['cutadapt_param'], fq1c=fq1Clean, fq2c=fq2Clean, Fq1=a ,Fq2=b )  
         print(command[subfq])
 
         popen[subfq]=subprocess.Popen(command[subfq], shell=True)
@@ -675,7 +675,7 @@ def getSnpAndMeth(outdir):
             else:
                 bamFile='{}/{}/{}.merge.sorted.rmdup.bam'.format(outdir+"/"+Path,chr,chr)
             genomeFile='{refDir}/{chr}.fa'.format(refDir=resDict['refDir'], chr=chr)
-            command='''{python3} {DSBS}  {bam} --ref {ref} --Chr {chr} --maxBp 50 --minVaf 0.15 --debug -g {genomeFile} -o {outdir}/{Path}/ --cpu {cpu} -d {dbsnp} '''.format(python3=sftDict['python3'], DSBS=sftDict['DSBS'], bam=bamFile, ref='hg38' if 'hg38' in resDict['ref'] else 'hg19' ,genomeFile=genomeFile, chr=chr, outdir=outdir,Path=Path, cpu=cpu, dbsnp=resDict['dbsnp'])
+            command='''{python3} {DSBS}  {bam} --ref {ref} --Chr {chr} --maxBp 50 --minVaf 0.15 -q -g {genomeFile} -o {outdir}/{Path}/ --cpu {cpu} -d {dbsnp} '''.format(python3=sftDict['python3'], DSBS=sftDict['DSBS'], bam=bamFile, ref='hg38' if 'hg38' in resDict['ref'] else 'hg19' ,genomeFile=genomeFile, chr=chr, outdir=outdir,Path=Path, cpu=cpu, dbsnp=resDict['dbsnp'])
             tmplog=outdir+'/log/'+chr+'.'+Path+".snpmeth.log"
             tmplogs.append(tmplog)
             snpCommand   +=outdir +'/' +Path + '/' + op.splitext(os.path.basename(bamFile))[0]+'.Snp.txt   ' 

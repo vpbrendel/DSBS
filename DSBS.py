@@ -100,9 +100,9 @@ def vcf2annovar(start0,end0,ref0,alt0):
     return(start0,end0,ref0,alt0)
 
 
-def pairCheckSnp(Mut_stand,baseDict,refNuc,IsSNP,Ismethy,minVaf):
+def pairCheckSnp(Mut_stand,baseDict,refNuc,IsSNP,Ismethy,minVaf,debug):
     #
-    ''''
+    '''
     2016-11-20 
     +/-
     read1 read2 real_+  real_-
@@ -131,26 +131,25 @@ def pairCheckSnp(Mut_stand,baseDict,refNuc,IsSNP,Ismethy,minVaf):
      T  ->  C       CC 1 or TC 2
     '''
     
-    
     pairedCov=sum(baseDict.values())
     if pairedCov ==0:
-        return ''
+        return []
     
     if not IsSNP:
-        if not Ismethy:return ''
-        #no mutation
+        if not Ismethy:return []
+        #no mutation        (isSNP = 0 and Ismethy != 0)
         if   refNuc =='G':
             if baseDict[('G','mC')]>=Mut_stand['G'][('G','mC')]['N']:
                 methy=baseDict[('G','mC')]/pairedCov
                 return ['-','-','-','-mC','%0.2f'%methy]
             else:
-                return ''
+                return []
         elif refNuc =='C':
             if baseDict[('mC','G')]>=Mut_stand['C'][('mC','G')]['N']:
                 methy=baseDict[('mC','G')]/pairedCov
                 return ['-','-','-','+mC','%0.2f'%methy]
             else:
-                return ''
+                return []
     else:
         mut=[]
         mut_VAF=[]
@@ -164,16 +163,15 @@ def pairCheckSnp(Mut_stand,baseDict,refNuc,IsSNP,Ismethy,minVaf):
                     if vaf > minVaf:  
                         mut.append(k[0])
                         mut_VAF.append('%0.2f'%(vaf))
-            if len(mut) ==0:return ''
+            if len(mut) ==0:return []
             if len(mut)==1:
                 if float(mut_VAF[0]) == 1:
-                    return    [mut[0],mut_VAF[0],'homo','-','-']
+                    return [mut[0],mut_VAF[0],'homo','-','-']
                 else:
-                    return    [mut[0],mut_VAF[0],'het','-','-']
+                    return [mut[0],mut_VAF[0],'het','-','-']
             else:
                 return [",".join(mut),",".join(mut_VAF),"het","-","-"]
         else:
-
             #mutation and methy
             #mut=[]
             #mut_VAF=[]
@@ -190,7 +188,6 @@ def pairCheckSnp(Mut_stand,baseDict,refNuc,IsSNP,Ismethy,minVaf):
                         if  vaf > minVaf:
                             mut.append('T')
                             mut_VAF.append('%0.2f'%(vaf))
-                
                 if baseDict[('A','T')] >=Mut_stand[refNuc][('A','T')]['N']:
                     #T>A
                     if refNuc!='A':
@@ -198,7 +195,6 @@ def pairCheckSnp(Mut_stand,baseDict,refNuc,IsSNP,Ismethy,minVaf):
                         if  vaf > minVaf:
                             mut.append('A')
                             mut_VAF.append('%0.2f'%(vaf))
-                
                 if baseDict[('G','mC')]>=Mut_stand[refNuc][('G','mC')]['N']:
                     met.append('-mC')
                     met_VAF.append('%0.2f'%(baseDict[('G','mC')]/(baseDict[('G','mC')]+baseDict[('G','C')])))
@@ -220,7 +216,7 @@ def pairCheckSnp(Mut_stand,baseDict,refNuc,IsSNP,Ismethy,minVaf):
 
                 if len(mut)==0 :
                     if len(met)==0:
-                        return ''
+                        return []
                     else:
                         return ['-','-',"-" ,','.join(met),','.join(met_VAF)]
                 if len(mut)==1:
@@ -300,10 +296,9 @@ def pairCheckSnp(Mut_stand,baseDict,refNuc,IsSNP,Ismethy,minVaf):
                         if vaf >minVaf:
                             mut.append('T')
                             mut_VAF.append('%0.2f'%(vaf))
-                
                 if len(mut)==0:
                     if  len(met)==0: 
-                        return '' 
+                        return [] 
                     else:
                         return ['-','-','-',",".join(met),",".join(met_VAF)]
                 if len(mut) ==1:
@@ -323,16 +318,16 @@ def pairCheckSnp(Mut_stand,baseDict,refNuc,IsSNP,Ismethy,minVaf):
                     else:
                         return [",".join(mut),",".join(mut_VAF),'het',",".join(met),",".join(met_VAF)]
 
-                    
-                    
+
+
 def sub_snpOutput(ID,START,END,BAM, GENOME,dbsnp, CHR, snpList,methyList,indelList,cpgList,chgList,chhList,cpgAppearList,cpgDisappearList,hemiMethyList,Mut_stand,maxDistance,maxLen,minLen,minReadQual,minReadQualN,maxN,maxSeqErr,maxSnp,maxIndel,maxBp,maxMut,minQual,minVaf,secAlign,strand,quiet,debug):
 
     #global methyList,snpList
     global dbsnp_tb 
-    if not quiet:sys.stdout.write(colored('INOFR: {}\t{}\t{}\t{} is processesing\n'.format(CHR,ID,START,END),'green'))
+    if not quiet:sys.stdout.write(colored('INFO: now processing {}\t{}\t{}\t{} ...\n'.format(CHR,ID,START,END),'green'))
     startT=time.time()
-    openFile = Fasta(GENOME)
-    
+    openFile = Fasta(GENOME, sequence_always_upper=True)
+
     SeqErrPoss={}
     
     allDict = defaultdict(lambda: {'gene_type': {('A','T'): 0, ('T','A'): 0, ('mC','G'): 0, ('G','mC'): 0, ('C','G'): 0,( 'G','C'): 0}, 'ref': '', "C_type": '-', 'Hemimethy': 0, 'all_Dep': 0, 'pair_dep': 0, 'mut_dep': 0, 'methy': 0})
@@ -355,23 +350,22 @@ def sub_snpOutput(ID,START,END,BAM, GENOME,dbsnp, CHR, snpList,methyList,indelLi
          ('C','T'): ('C','G'),
          ('A','G'): ('G','C')}}
 
-    #2017-09-10: dbsnp ID dict
+    #rsDict is a dictionary with keys equal to a string consisting of
+    # db_chr+":"+str(start)+":"+str(end)+":"+ref+":"+alt  and values  db_id (rs identifiers)
     dbsnp_tb=getDbsnp(dbsnp)
-    db_infors=defaultdict(lambda:".")
-    for db_infor in dbsnp_tb.fetch(CHR, START, END):
-        db_chr,db_pos,db_id,db_ref,db_alt=db_infor.strip().split()[:5]
+    rsDict=defaultdict(lambda:".")
+    for rsRecord in dbsnp_tb.fetch(CHR, START, END):
+        db_chr,db_pos,db_id,db_ref,db_alt=rsRecord.strip().split()[:5]
         if len(db_ref)==len(db_alt):
             start = end = db_pos
             ref,alt=db_ref,db_alt
         else:
             start,end,ref,alt = vcf2annovar(int(db_pos),int(db_pos),db_ref,db_alt)
-        db_infors[db_chr+":"+str(start)+":"+str(end)+":"+ref+":"+alt]=db_id
-    if debug:print(ID,'db_infors is ok')
+        rsDict[db_chr+":"+str(start)+":"+str(end)+":"+ref+":"+alt]=db_id
 
 
     C_type=defaultdict(lambda:'-')
-    #sequence0=faseq(GENOME, CHR, START, END+3)  if END%100000==0  else faseq(GENOME, CHR, START, END)
-    sequence0 = openFile[CHR][START:END+3].upper() if END%100000==0  else openFile[CHR][START:END].upper()
+    sequence0 = openFile[CHR][START:END+3] if END%100000==0  else openFile[CHR][START:END]
     sequence=sequence0[:-3]
     
     for i,s in enumerate(sequence):
@@ -393,7 +387,7 @@ def sub_snpOutput(ID,START,END,BAM, GENOME,dbsnp, CHR, snpList,methyList,indelLi
     #store duplicate 
     duplicate={'+':[],'-':[]}
     AA=0
-    if debug:print('{} test{}'.format(ID,1))
+
     for read in samfile.fetch(CHR, START, END):
         #flush tmp dict
         site_tmp_dict=defaultdict(lambda:{'gene_type':{
@@ -406,19 +400,22 @@ def sub_snpOutput(ID,START,END,BAM, GENOME,dbsnp, CHR, snpList,methyList,indelLi
         ref_start=read.reference_start
         next_ref_start=read.next_reference_start
         
-        
+        #####VB CHANGE: THIS WOULD SEEM TO BE THE CORRECT FILTER IF WE ONLY WANT PRIMARY ALIGNMENTS FROM HAIRPIN-PAIRED READS
+        if  read.is_secondary or not (read.flag==97 or read.flag==145 or read.flag==81 or read.flag==161):
+            continue
+
         # filter 1
         #check f optical or PCR duplicate
         if read.is_duplicate:
             if debug:
-                print(read.qname,"f optical or PCR duplicate")
+                print('DISCARD',read.qname,": liklely optical or PCR duplicate")
             continue
 
         #filter 2 
         #check is secondary
         if (not secAlign) and read.is_secondary:
             if debug:
-                print(read.qname,"non-optimal")
+                print('DISCARD',read.qname,": non-optimal alignment")
             continue
         
         #filter 3
@@ -426,7 +423,7 @@ def sub_snpOutput(ID,START,END,BAM, GENOME,dbsnp, CHR, snpList,methyList,indelLi
 
         if abs(next_ref_start-ref_start) >maxDistance: 
             if debug:
-                print(read.qname," therer is no overlap between paired reads")
+                print('DISCARD',read.qname,": reads in read-pair are too far apart")
             continue
             #
             #to make False positive smaller, maxDistance should be smaller
@@ -436,40 +433,39 @@ def sub_snpOutput(ID,START,END,BAM, GENOME,dbsnp, CHR, snpList,methyList,indelLi
         qualities=read.query_qualities.tolist()    
         if len(list(filter(lambda x:x<minReadQual ,qualities))) / len(qualities) >minReadQualN:
             if debug:
-                print(read.name,"too much low-quality bases")
-            continue   
+                print('DISCARD',read.name,"read contains too many low-quality base calls")
+            continue
         
         #filter 5
         #a read which cigar contains S or H should be discarded
         cigarstring=read.cigarstring
         if 'S' in cigarstring or 'H' in cigarstring :
-            #if debug:
-            #    print(read.qname,'S or H in cigar')
-            continue  
+            if debug:
+                print('DISCARD',read.qname,": S or H in cigar")
+            continue
         
         #filter 6
         #a read read can have at most one insert or del
         if cigarstring.count('I') >maxIndel or cigarstring.count('D') >maxIndel:
-            #if debug:
-            #    print(read.qname,'too much indel')
+            if debug:
+                print('DISCARD',read.qname,": the alignment contains too many indels")
             continue
         
         #filter 7
         #a read which contains too much N  should be discarded
         realseq=read.query_sequence.upper()  
         if realseq.count('N') >maxN:
-            #if debug:
-            #    print(read.qname,'too much N')
+            if debug:
+                print('DISCARD',read.qname,": the read sequence contains too many Ns")
             continue
         
         #filter 8
         #a read that is too long or too short must be discarded
         readlen=read.rlen
         if readlen <= minLen or readlen>=maxLen :            
-            #if debug:
-            #    print(read.qname,'too long or short')
+            if debug:
+                print('DISCARD',read.qname,": the read length is not in the allowed range")
             continue
-        
         
         #complete sequence and quality value through cigar
         cigar=read.cigar #[(0, 55), (2, 2), (0, 89)]
@@ -489,22 +485,21 @@ def sub_snpOutput(ID,START,END,BAM, GENOME,dbsnp, CHR, snpList,methyList,indelLi
                     for v,l in zip(c):
                         cigarlsit.extend([cigar_vlaue[v]]*l)
                 qualities=qualities[:cigar[0][1]]+qualities[-cigar[2][1]:]
-                        
         else:
             cigarlsit=[cigar_vlaue[cigar[0][0]]]*cigar[0][1]
 
-
         chr=samfile.getrname(read.tid)
-
         readName=read.qname
 
         #print(read.query_alignment_sequence,read.get_reference_sequence())
         #refseq=read.get_reference_sequence()     #the refseq  displays del, hides insert
         refseq=read.query_alignment_sequence
-        Stand = '-' if read.is_reverse else '+'
+        #####Stand = '-' if read.is_reverse else '+'
+        Stand = '+' if read.is_reverse else '-'
         ref_end=read.reference_end
         isRead1=read.is_read1
         mappingstrand=read.get_tags()[-1][-1]  #(bsmap ZS stand)
+
         #ST-E00144:480:H2KYYCCXY:4:2115:31913:53961 144 146 144 902187 902333 902189 255 [(0, 55), (2, 2), (0, 89)] 0 144
         #qstat qend  o based
         #[(0, 12), (1, 1), (0, 131)]    1 means I
@@ -516,13 +511,18 @@ def sub_snpOutput(ID,START,END,BAM, GENOME,dbsnp, CHR, snpList,methyList,indelLi
             'cigar':cigar,'cigarstring':cigarstring,
             'cigarlsit':cigarlsit,'mappingstrand':mappingstrand}
         else:
-            #filter 9 
+            ##### VB TO REVIEW
+            #filter 9
             # paired reads which have different stand should be discard
-            if Stand != tmp_dict[readName]['Stand']:
-                #if debug:
-                #    print(readName,'paired read diff stand',Stand,tmp_dict[readName]['Stand'])
-                del tmp_dict[readName]
-                continue
+            #####if Stand == tmp_dict[readName]['Stand']:
+
+            #####if Stand != tmp_dict[readName]['Stand']:
+                #####if debug:
+                    #####print(readName,'paired read diff stand',Stand,tmp_dict[readName]['Stand'])
+                #####if debug:print('VB now continue; current read was ',readName,' on chr ',CHR,flush=True)
+                #####del tmp_dict[readName]
+                #####continue
+            #####else:
             
             #filter 10
             if strand:
@@ -533,24 +533,22 @@ def sub_snpOutput(ID,START,END,BAM, GENOME,dbsnp, CHR, snpList,methyList,indelLi
                 if isRead1:
                     if mappingstrand =="++" and  tmp_dict[readName]['mappingstrand'] =='--':
                         Map_ERR_Stand=0
-                        
                     elif mappingstrand =="-+" and  tmp_dict[readName]['mappingstrand'] =='+-':
                         Map_ERR_Stand=0
-                    #if debug:
-                    #    print(readName+"\t"+mappingstrand+"\t"+tmp_dict[readName]['mappingstrand'])
+                    if debug:
+                        print(readName+"\t"+mappingstrand+"\t"+tmp_dict[readName]['mappingstrand'])
                 else:
                     if mappingstrand =="--" and  tmp_dict[readName]['mappingstrand'] =='++':
                         Map_ERR_Stand=0
                     elif mappingstrand =="+-" and  tmp_dict[readName]['mappingstrand'] =='-+':
                         Map_ERR_Stand=0
-                    #if debug:
-                    #    print(readName+"\t"+tmp_dict[readName]['mappingstrand']+"\t"+mappingstrand)
+                    if debug:
+                        print(readName+"\t"+tmp_dict[readName]['mappingstrand']+"\t"+mappingstrand)
                 if Map_ERR_Stand:
-                    #if debug:
-                    #    print(readName,"wrong aligned stand")
+                    if debug:
+                        print(readName,"wrong aligned stand")
                     continue
                 
-            
             #filter 11
             # duplicate  again 
             #add a  duplicate function
@@ -562,17 +560,15 @@ def sub_snpOutput(ID,START,END,BAM, GENOME,dbsnp, CHR, snpList,methyList,indelLi
                 duplicate[Stand].append((ref_start,ref_end))
                 duplicate[Stand].append((tmp_dict[readName]['ref_start'],tmp_dict[readName]['ref_start']))
                 
-            
             # get overlap
             #1 based [ )
             overlap_s = max(ref_start, tmp_dict[readName]['ref_start'])
             overlap_e = min(ref_end,   tmp_dict[readName]['ref_end']  )
-            human_ref_seq = openFile[chr][overlap_s:overlap_e].upper()
+            ref_seq = openFile[chr][overlap_s:overlap_e].seq  ##### VB CHANGE
             
             indel=0
-            #if the paired read is inserted at the same time, it is judged that the inserted position is different.
+#           #if the paired read is inserted at the same time, it is judged that the inserted position is different.
             if 'I' in cigarstring and 'I' in tmp_dict[readName]['cigarstring']:
-                
                 pos=ref_start+cigar[0][1]
                 if pos == tmp_dict[readName]['ref_start']+tmp_dict[readName]['cigar'][0][1] and cigar[1][1] ==tmp_dict[readName]['cigar'][1][1]:
                     if pos not in indelDict['insert'][chr]:indelDict['insert'][chr][pos]={'allcoverage':0,'paircoverage':0,'mutcoverage':0,'insetcon':{}}
@@ -590,7 +586,6 @@ def sub_snpOutput(ID,START,END,BAM, GENOME,dbsnp, CHR, snpList,methyList,indelLi
                                 sys.stderr.write(colored('Warning: find a inser ERROR in read {}, {}, {}, {}, {}\n'.format(readName,pos,Stand,r1,r2),"yellow"))
                         else:
                             insetcon+=reflactNeu[Stand][(r1,r2)][0].replace('m','')
-                    
                     indelDict['insert'][chr][pos]['allcoverage'] +=2
                     indelDict['insert'][chr][pos]['paircoverage']+=2
                     indelDict['insert'][chr][pos]['mutcoverage'] +=2
@@ -601,50 +596,46 @@ def sub_snpOutput(ID,START,END,BAM, GENOME,dbsnp, CHR, snpList,methyList,indelLi
                     indel=1
             elif 'D' in cigarstring and 'D' in tmp_dict[readName]['cigarstring']:
                 pos=ref_start+cigar[0][1]
-                if  pos == tmp_dict[readName]['ref_start']+tmp_dict[readName]['cigar'][0][1] and cigar[1][1] ==tmp_dict[readName]['cigar'][1][1]:
+                if pos == tmp_dict[readName]['ref_start']+tmp_dict[readName]['cigar'][0][1] and cigar[1][1] ==tmp_dict[readName]['cigar'][1][1]:
                     if pos not in indelDict['del'][chr]:indelDict['del'][chr][pos]={'allcoverage':0,'paircoverage':0,'mutcoverage':0,'delcon':{}}
-                    delcon=ref_seq= openFile[chr][pos:pos+cigar[1][1]]
+                    delcon= openFile[chr][pos:pos+cigar[1][1]].seq
                     indelDict['del'][chr][pos]['allcoverage'] +=2
                     indelDict['del'][chr][pos]['paircoverage']+=2
                     indelDict['del'][chr][pos]['mutcoverage'] +=2
-                    if delcon  not in indelDict['del'][chr][pos]['delcon']:
+                    if delcon not in indelDict['del'][chr][pos]['delcon']:
                         indelDict['del'][chr][pos]['delcon'][delcon]=2
                     else:
                         indelDict['del'][chr][pos]['delcon'][delcon]+=2
                     indel=1
 
-                    
-            # get new read1 and read2  from overlap
+            #get new read1 and read2  from overlap
             poss=range(overlap_s,overlap_e)
             if isRead1:
                 read1=refseq[overlap_s-ref_start:readlen-(ref_end-overlap_e)]  #[ref_start,ref_end] [0,readlen]
                 read2=tmp_dict[readName]['refseq'][overlap_s-tmp_dict[readName]['ref_start']:tmp_dict[readName]['readlen']-(tmp_dict[readName]['ref_end']-overlap_e)]      
-                #[tmp_dict[readName]['ref_start'],tmp_dict[readName]['ref_end']] 
-                #[0,                              tmp_dict[readName]['readlen']]
-                
                 read1Qua=qualities[overlap_s-ref_start:readlen-(ref_end-overlap_e)]
                 read2Qua=tmp_dict[readName]['qualities'][overlap_s-tmp_dict[readName]['ref_start']:tmp_dict[readName]['readlen']-(tmp_dict[readName]['ref_end']-overlap_e)]  
             else:
                 read2=refseq[overlap_s-ref_start:readlen-(ref_end-overlap_e)]   #[ref_start,ref_end] [0,readlen]
                 read1=tmp_dict[readName]['refseq'][overlap_s-tmp_dict[readName]['ref_start']:tmp_dict[readName]['readlen']-(tmp_dict[readName]['ref_end']-overlap_e)]
-                
                 read2Qua=qualities[overlap_s-ref_start:readlen-(ref_end-overlap_e)]
                 read1Qua=tmp_dict[readName]['qualities'][overlap_s-tmp_dict[readName]['ref_start']:tmp_dict[readName]['readlen']-(tmp_dict[readName]['ref_end']-overlap_e)]
-            
 
             SNP=0
             methy=0
             seqERROR=0
             SNPsite=[]
             tmpLen=len(read1)
-            
-            
+
             #check the quality of 10 bases in the head and 10 bases in the tail
-            Start_filter_qual= 0 if len(list(filter(lambda x:x<minReadQual,read1Qua[:10])))/10 >minReadQualN or len(list(filter(lambda x:x<minReadQual,read2Qua[:10])))/10 >minReadQualN else 1
-            End_filter_qual =0 if len(list(filter(lambda x:x<minReadQual,read1Qua[-10:])))/10 >minReadQualN or len(list(filter(lambda x:x<minReadQual,read2Qua[-10:])))/10 >minReadQualN else 1
+            Start_filter_qual= 0 if len(list(filter(lambda x:x<minReadQual,read1Qua[:10])))/10  >minReadQualN or len(list(filter(lambda x:x<minReadQual,read2Qua[:10])))/10  >minReadQualN else 1
+            End_filter_qual  = 0 if len(list(filter(lambda x:x<minReadQual,read1Qua[-10:])))/10 >minReadQualN or len(list(filter(lambda x:x<minReadQual,read2Qua[-10:])))/10 >minReadQualN else 1
             
             tmpDelPos=[]
-            for n,r1,r2,r,p,q1,q2 in zip (range(len(read1)),read1,read2,human_ref_seq,poss,read1Qua,read2Qua):
+            mya=[]
+            #####VB changed the range by inserting +1
+            for n,r1,r2,r,p,q1,q2 in zip (range(len(read1)+1),read1,read2,ref_seq,poss,read1Qua,read2Qua):
+                mya.append(1)
                 #n index , r1  read1 base, r2 read2 base, r ref base, p pos, q1  read1 quality, q2 read2 quality
                 if r1 == '-' or  r2 == '-':
                     tmpDelPos.append(p)
@@ -655,15 +646,14 @@ def sub_snpOutput(ID,START,END,BAM, GENOME,dbsnp, CHR, snpList,methyList,indelLi
                     if p not in SeqErrPoss:SeqErrPoss[p]=''
                     site_tmp_dict[p]['seq_err']=1
                     if debug:
-                        sys.stderr.write(colored('Warning: find a seqERROR in read {}, {}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(readName,ref_start,n+1,Stand,r1,r2,q1,q2,read1,read2),"yellow"))
+                        print('Warning: find a seqERROR in read {}, {}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(readName,ref_start,n+1,Stand,r1,r2,q1,q2,read1,read2), flush=True)
+                        #sys.stderr.write(colored('Warning: find a seqERROR in read {}, {}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(readName,ref_start,n+1,Stand,r1,r2,q1,q2,read1,read2),"yellow"))
                     continue
                     
                 realNeu=reflactNeu[Stand][(r1,r2)]
-                
 
                 site_tmp_dict[p]['gene_type'][realNeu]+=2
                 site_tmp_dict[p]['ref']=r
-                
 
                 if p in indelDict['del'][chr]:
                     indelDict['del'][chr][p]['paircoverage']+=2
@@ -671,7 +661,6 @@ def sub_snpOutput(ID,START,END,BAM, GENOME,dbsnp, CHR, snpList,methyList,indelLi
                     indelDict['insert'][chr][p]['paircoverage']+=2
                 site_tmp_dict[p]['pair_dep']+=2
                 
-
                 if  r not in realNeu[0].replace('m',''):
                     SNP+=1
                     SNPsite.append(p)
@@ -679,39 +668,6 @@ def sub_snpOutput(ID,START,END,BAM, GENOME,dbsnp, CHR, snpList,methyList,indelLi
                     #site_tmp_dict[p]['SNP']=1
                     site_tmp_dict[p]['qual']=(q1,q2)
                     site_tmp_dict[p]['mut_dep']+=2
-
-                    #if n<=9:
-                    #    #n 10 
-                    #    if  Start_filter_qual:
-                    #        SNP+=1
-                    #        SNPsite.append(p)
-                    #        site_tmp_dict[p]['qual']=(q1,q2)
-                    #        site_tmp_dict[p]['mut_dep']+=2
-                    #    else:
-                    #        continue
-                    #elif  (tmpLen-n)<10:
-                    #    if End_filter_qual:
-                    #        SNP+=1
-                    #        SNPsite.append(p)
-                    #        site_tmp_dict[p]['qual']=(q1,q2)
-                    #        site_tmp_dict[p]['mut_dep']+=2
-                    #    else:
-                    #        continue
-                    #elif checkContinueBase(human_ref_seq[n-7:n]) >=0.8:
-                    #    #print('')
-                    #    #print(list(filter(lambda x:x<minReadQual,read1Qua[n-5:n+3])),list(filter(lambda x:x<minReadQual,read2Qua[n-5:n+3])))
-                    #    if len(list(filter(lambda x:x<minReadQual,read1Qua[n-5:n+3])))/8 >minReadQualN or len(list(filter(lambda x:x<minReadQual,read2Qua[n-5:n+3])))/8 >minReadQualN:
-                    #        continue
-                    #    else:
-                    #        SNP+=1
-                    #        SNPsite.append(p)
-                    #        site_tmp_dict[p]['qual']=(q1,q2)
-                    #        site_tmp_dict[p]['mut_dep']+=2
-                    #else:
-                    #    SNP+=1
-                    #    SNPsite.append(p)
-                    #    site_tmp_dict[p]['qual']=(q1,q2)
-                    #    site_tmp_dict[p]['mut_dep']+=2
 
                 if 'mC' in realNeu:
                     site_tmp_dict[p]['methy']+=2
@@ -727,9 +683,8 @@ def sub_snpOutput(ID,START,END,BAM, GENOME,dbsnp, CHR, snpList,methyList,indelLi
                             #Prevent C from having sequencing errors, causing C not to be methylated and G to have
                             continue
                         else:
-                            
                             if n==0 or p-1 in tmpDelPos or site_tmp_dict[p-1]['mut_dep']>0:
-                               #the first position of paired read shoul  not be G
+                               #the first position of paired read should not be G
                                #the c postion of CG should not be del(-)
                                #the C of CG shoul not mutated
                                #防止CG的C出现del(-)
@@ -759,7 +714,7 @@ def sub_snpOutput(ID,START,END,BAM, GENOME,dbsnp, CHR, snpList,methyList,indelLi
                 if len(tmppos)>0:
                     for p in tmppos:
                         del site_tmp_dict[p]
-                    if debug: sys.stdout.write(colored('Warning :the number of snps in {}bp range in read {} is greater than {}, {}\t{}\t{}\n'.format(maxBp,readName,maxMut),'yellow'))
+                    if debug: sys.stdout.write(colored('Warning :the number of snps in {}bp range in read {} is greater than {}\n'.format(maxBp,readName,maxMut),'yellow'))
 
             ## Filter 15
             #the quality of snp should be greater than a certain value
@@ -780,7 +735,9 @@ def sub_snpOutput(ID,START,END,BAM, GENOME,dbsnp, CHR, snpList,methyList,indelLi
                 else:
                     if  debug:
                         sys.stderr.write(colored('Warning : the quality {} of the {}st postion in read {} is less than the quality {} of supporting call snp , discard\n'.format(site_tmp_dict[p]['qual'], p+1, readName, minQual),'yellow'))
-                           
+
+
+
     SNPCon=''
     INDELCon=''
     MethyCon=''
@@ -796,13 +753,13 @@ def sub_snpOutput(ID,START,END,BAM, GENOME,dbsnp, CHR, snpList,methyList,indelLi
     
     for pos in sorted(allDict.keys()):
         if pos<START or pos>END:continue
-        if allDict[pos]['ref']=='N':continue 
-        con=pairCheckSnp(Mut_stand,allDict[pos]['gene_type'],allDict[pos]['ref'],allDict[pos]['mut_dep'],allDict[pos]['methy'],minVaf)
+        if allDict[pos]['ref']=='N':continue
+        con=pairCheckSnp(Mut_stand,allDict[pos]['gene_type'],allDict[pos]['ref'],allDict[pos]['mut_dep'],allDict[pos]['methy'],minVaf,debug)
 
         if allDict[pos]['ref'] == 'C':
             if C_type[pos]=="CpG":
                 #the depth of C in CpG is 0
-                if allDict[pos]['pair_dep'] ==0: 
+                if allDict[pos]['pair_dep'] == 0: 
                     if allDict[pos+1]['pair_dep'] !=0:
                         # #the depth of G in CpG is gt 0
                         tmp_methy=allDict[pos+1]['methy']/allDict[pos+1]['pair_dep']
@@ -834,7 +791,6 @@ def sub_snpOutput(ID,START,END,BAM, GENOME,dbsnp, CHR, snpList,methyList,indelLi
                                 tmp_Hemimethy=allDict[pos]['Hemimethy']/allDict[pos]['pair_dep']
                                 HemimethyCon+="{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(chr,pos+1,pos+2,"C","G","Hemimethy_C",'%0.2f'%(tmp_Hemimethy),allDict[pos]['pair_dep'])
                                 if pos in SeqErrPoss:SeqErr_hemimethy+=1
-   
                         elif allDict[pos+1]['Hemimethy']>0:
                             #G Hemimethy
                             tmp_Hemimethy=allDict[pos+1]['Hemimethy']/allDict[pos+1]['pair_dep']
@@ -856,12 +812,32 @@ def sub_snpOutput(ID,START,END,BAM, GENOME,dbsnp, CHR, snpList,methyList,indelLi
                     CHHCon+="{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(chr,pos+1,pos+2,"C","CHH",'%0.2f'%(tmp_methy),allDict[pos+1]['pair_dep'])
                 else:
                     CHHCon+="{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(chr,pos+1,pos+2,"C","CHH","NA","NA")
-        if con:
+
+
+        if len(con) == 0:
+            if debug:
+                debugCout=[0]*8
+                debugCon="+A:+T:+C:+G:-A:-T:-C:-G"
+                debugCout[0]= allDict[pos]['gene_type'][('A','T')]    #+A
+                debugCout[5]= allDict[pos]['gene_type'][('A','T')]    #-T
+                debugCout[1]= allDict[pos]['gene_type'][('T','A')]    #+T
+                debugCout[4]= allDict[pos]['gene_type'][('T','A')]    #-A
+                debugCout[2]+=allDict[pos]['gene_type'][('mC','G')]  #+C
+                debugCout[2]+=allDict[pos]['gene_type'][('C','G')]   #+C
+                debugCout[3]+=allDict[pos]['gene_type'][('G','mC')]  #+G
+                debugCout[3]+=allDict[pos]['gene_type'][('G','C')]   #+G
+                debugCout[6]+=allDict[pos]['gene_type'][('G','C')]   #-C
+                debugCout[6]+=allDict[pos]['gene_type'][('G','mC')]  #-C
+                debugCout[7]+=allDict[pos]['gene_type'][('C','G')]   #-G
+                debugCout[7]+=allDict[pos]['gene_type'][('mC','G')]  #-G
+                debugCout=":".join([str(iii) for iii in debugCout])
+                SNPCon+='{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(chr,pos+1,".",allDict[pos]['ref'],'-\t-\t-\t-\t-','A_T:T_A:mC_G:G_mC:C_G:G_C',":".join([str(allDict[pos]['gene_type'][gt]) for gt in [('A','T'),('T','A'),('mC','G'),('G','mC'),('C','G'),('G','C')]]),debugCon,debugCout)
+            continue
+        else:
             if con[0]=='-':
                 MethyCon+='{}\t{}\t{}\t{}\t{}\t{}\n'.format(chr,pos+1,allDict[pos]['ref'],"\t".join(con),'A_T:T_A:mC_G:G_mC:C_G:G_C',":".join([str(allDict[pos]['gene_type'][gt]) for gt in [('A','T'),('T','A'),('mC','G'),('G','mC'),('C','G'),('G','C')]]))
                 if pos in SeqErrPoss:SeqErr_methy+=1
             else:
-            
                 #20201002
                 #filter 16
                 #homo  See the true and false positive distribution graph of chromosome X for the reason
@@ -883,7 +859,7 @@ def sub_snpOutput(ID,START,END,BAM, GENOME,dbsnp, CHR, snpList,methyList,indelLi
                         if sum([allDict[pos]['gene_type'][gt] for gt in [('A','T'),('mC','G'),('G','mC'),('C','G'),('G','C')]]) <=4:
                             continue
                 db_key=chr+":"+str(pos+1)+":"+str(pos+1)+":"+allDict[pos]['ref']+":"+con[0]   
-                db_id=db_infors[db_key]
+                db_id=rsDict[db_key]
                 if  debug:
                     debugCout=[0]*8
                     debugCon="+A:+T:+C:+G:-A:-T:-C:-G"
@@ -912,30 +888,11 @@ def sub_snpOutput(ID,START,END,BAM, GENOME,dbsnp, CHR, snpList,methyList,indelLi
                     if allDict[pos-1]['ref']=="C" and "G" in con[0] or allDict[pos+1]['ref']=="G" and "C" in con[0]:
                         CpG_appear+=   '{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(chr,pos+1,db_id,allDict[pos]['ref'],"\t".join(con),'A_T:T_A:mC_G:G_mC:C_G:G_C',":".join([str(allDict[pos]['gene_type'][gt]) for gt in [('A','T'),('T','A'),('mC','G'),('G','mC'),('C','G'),('G','C')]]),"".join([allDict[pp]['ref'] for pp in range(pos-2,pos+3)]))            #2018-01-29
 
-                    #old CpG disapper,new CpG apper  TCGGT > TCCGT
+                    #old CpG disappear,new CpG appear  TCGGT > TCCGT
 
                 if con[3] != '-':
                     MethyCon+='{}\t{}\t{}\t{}\t{}\t{}\n'.format(chr,pos+1,allDict[pos]['ref'],"\t".join(con),'A_T:T_A:mC_G:G_mC:C_G:G_C',":".join([str(allDict[pos]['gene_type'][gt]) for gt in [('A','T'),('T','A'),('mC','G'),('G','mC'),('C','G'),('G','C')]]))
                     if pos in SeqErrPoss:SeqErr_methy+=1
-        else:
-            if debug:
-                debugCout=[0]*8
-                debugCon="+A:+T:+C:+G:-A:-T:-C:-G"
-                debugCout[0]= allDict[pos]['gene_type'][('A','T')]    #+A
-                debugCout[5]= allDict[pos]['gene_type'][('A','T')]    #-T
-                debugCout[1]= allDict[pos]['gene_type'][('T','A')]    #+T
-                debugCout[4]= allDict[pos]['gene_type'][('T','A')]    #-A
-                debugCout[2]+=allDict[pos]['gene_type'][('mC','G')]  #+C
-                debugCout[2]+=allDict[pos]['gene_type'][('C','G')]   #+C
-                debugCout[3]+=allDict[pos]['gene_type'][('G','mC')]  #+G
-                debugCout[3]+=allDict[pos]['gene_type'][('G','C')]   #+G
-                debugCout[6]+=allDict[pos]['gene_type'][('G','C')]   #-C
-                debugCout[6]+=allDict[pos]['gene_type'][('G','mC')]  #-C
-                debugCout[7]+=allDict[pos]['gene_type'][('C','G')]   #-G
-                debugCout[7]+=allDict[pos]['gene_type'][('mC','G')]  #-G
-                debugCout=":".join([str(iii) for iii in debugCout])
-                SNPCon+='{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(chr,pos+1,".",allDict[pos]['ref'],'-\t-\t-\t-\t-','A_T:T_A:mC_G:G_mC:C_G:G_C',":".join([str(allDict[pos]['gene_type'][gt]) for gt in [('A','T'),('T','A'),('mC','G'),('G','mC'),('C','G'),('G','C')]]),debugCon,debugCout)
-
 
 
     indel='insert'
@@ -945,7 +902,7 @@ def sub_snpOutput(ID,START,END,BAM, GENOME,dbsnp, CHR, snpList,methyList,indelLi
             if pos<START or pos>END:continue
             for insetcon in indelDict[indel][chr][pos]['insetcon']:
                 db_key=chr+":"+str(pos+1)+":"+str(pos+1)+":"+'-'+":"+insetcon
-                db_id=db_infors[db_key]
+                db_id=rsDict[db_key]
                 INDELCon+="{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(chr,pos+1,db_id,'-',insetcon,indelDict[indel][chr][pos]['mutcoverage'],indelDict[indel][chr][pos]['paircoverage'],indelDict[indel][chr][pos]['allcoverage'])
     indel='del'
     for chr in indelDict[indel]:
@@ -954,7 +911,7 @@ def sub_snpOutput(ID,START,END,BAM, GENOME,dbsnp, CHR, snpList,methyList,indelLi
             if pos<START or pos>END:continue 
             for delcon in indelDict[indel][chr][pos]['delcon']:
                 db_key=chr+":"+str(pos+1)+":"+str(pos+1+len(delcon)-1)+":"+delcon+":"+"-"
-                db_id=db_infors[db_key]
+                db_id=rsDict[db_key]
                 #INDELCon+="{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(chr,pos+1,pos+1+len(delcon)-1,delcon,'-',indelDict[indel][chr][pos]['mutcoverage'],indelDict[indel][chr][pos]['paircoverage'],indelDict[indel][chr][pos]['allcoverage'])
                 INDELCon+="{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(chr,pos+1,db_id,delcon,'-',indelDict[indel][chr][pos]['mutcoverage'],indelDict[indel][chr][pos]['paircoverage'],indelDict[indel][chr][pos]['allcoverage'])
 
@@ -972,7 +929,7 @@ def sub_snpOutput(ID,START,END,BAM, GENOME,dbsnp, CHR, snpList,methyList,indelLi
         sys.stdout.write(colored('INFOR: thread {},  seqERROR                           {}.\n'.format(ID,len(SeqErrPoss)),          'green'))
         sys.stdout.write(colored('INFOR: thread {},  the seqERROR number in Hemimethy   {}.\n'.format(ID,SeqErr_hemimethy),         'green'))
         sys.stdout.write(colored('INFOR: thread {},  the seqERROR number in variation   {}.\n'.format(ID,SeqErr_Snp),               'green'))
-        sys.stdout.write(colored('INFOR: thread {},  the seqERROR number in methyaltion {}.\n'.format(ID,SeqErr_methy),             'green'))
+        sys.stdout.write(colored('INFOR: thread {},  the seqERROR number in methylation {}.\n'.format(ID,SeqErr_methy),             'green'))
 
 
     snpList[ID]          = SNPCon
