@@ -401,7 +401,7 @@ def sub_snpOutput(ID,START,END,BAM, GENOME,dbsnp, CHR, snpList,methyList,indelLi
         next_ref_start=read.next_reference_start
         
         #####VB CHANGE: THIS WOULD SEEM TO BE THE CORRECT FILTER IF WE ONLY WANT PRIMARY ALIGNMENTS FROM HAIRPIN-PAIRED READS
-        if  read.is_secondary or not (read.flag==97 or read.flag==145 or read.flag==81 or read.flag==161):
+        if  read.is_secondary or not (read.flag==65 or read.flag==129 or read.flag==113 or read.flag==177 or read.flag==97 or read.flag==145 or read.flag==81 or read.flag==161):
             continue
 
         # filter 1
@@ -494,8 +494,8 @@ def sub_snpOutput(ID,START,END,BAM, GENOME,dbsnp, CHR, snpList,methyList,indelLi
         #print(read.query_alignment_sequence,read.get_reference_sequence())
         #refseq=read.get_reference_sequence()     #the refseq  displays del, hides insert
         refseq=read.query_alignment_sequence
-        #####Stand = '-' if read.is_reverse else '+'
-        Stand = '+' if read.is_reverse else '-'
+        Stand = '-' if read.is_reverse else '+'
+        #####Stand = '+' if read.is_reverse else '-'
         ref_end=read.reference_end
         isRead1=read.is_read1
         mappingstrand=read.get_tags()[-1][-1]  #(bsmap ZS stand)
